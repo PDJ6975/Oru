@@ -1,10 +1,3 @@
-//
-//  OruApp.swift
-//  Oru
-//
-//  Created by Antonio Rodríguez Calderón on 1/3/26.
-//
-
 import SwiftUI
 import SwiftData
 
@@ -12,7 +5,14 @@ import SwiftData
 struct OruApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            User.self,
+            Habit.self,
+            Unit.self,
+            Compliance.self,
+            Origami.self,
+            UserOrigami.self,
+            OrigamiPhase.self,
+            Quote.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
