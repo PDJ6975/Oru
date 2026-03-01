@@ -10,9 +10,9 @@ struct OruApp: App {
             Unit.self,
             Compliance.self,
             Origami.self,
-            UserOrigami.self,
+            UserOrigami.self, 
             OrigamiPhase.self,
-            Quote.self,
+            Quote.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
