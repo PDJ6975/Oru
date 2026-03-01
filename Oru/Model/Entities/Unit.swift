@@ -1,10 +1,19 @@
 import SwiftData
 
 @Model
-class Unit {
-    var name: String = ""
+final class Unit {
+    var name: String
+    var origin: UnitOrigin
 
-    init(name: String = "") {
+    init(name: String, origin: UnitOrigin = .base) {
         self.name = name
+        self.origin = origin
+    }
+}
+
+extension Unit {
+    enum UnitOrigin: String, Codable, CaseIterable {
+        case base
+        case custom
     }
 }

@@ -1,10 +1,21 @@
+import Foundation
 import SwiftData
 
 @Model
-class Compliance {
-    var name: String = ""
+final class Compliance {
+    var date: Date
+    var completed: Bool
+    var recordedAmount: Double?
 
-    init(name: String = "") {
-        self.name = name
+    var habit: Habit?
+
+    init(
+        date: Date,
+        completed: Bool = false,
+        recordedAmount: Double? = nil
+    ) {
+        self.date = date
+        self.completed = completed
+        self.recordedAmount = recordedAmount
     }
 }

@@ -1,10 +1,14 @@
 import SwiftData
 
 @Model
-class OrigamiPhase {
-    var name: String = ""
+final class OrigamiPhase {
+    var phaseNumber: Int
+    var illustrationName: String
 
-    init(name: String = "") {
-        self.name = name
+    var origami: Origami?
+
+    init(phaseNumber: Int, illustrationName: String) {
+        self.phaseNumber = phaseNumber
+        self.illustrationName = illustrationName
     }
 }

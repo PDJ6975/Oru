@@ -1,10 +1,12 @@
 import SwiftData
 
 @Model
-class Quote {
-    var name: String = ""
+final class Quote {
+    var text: String
+    var source: String?
 
-    init(name: String = "") {
-        self.name = name
+    init(text: String, source: String? = nil) {
+        self.text = text
+        self.source = source
     }
 }
