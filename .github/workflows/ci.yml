@@ -25,7 +25,6 @@ jobs:
           xcodebuild test \
             -scheme Oru \
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
-            -only-testing:OruTests \
             IPHONEOS_DEPLOYMENT_TARGET=18.0 \
             CODE_SIGNING_ALLOWED=NO
 
