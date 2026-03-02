@@ -6,6 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3B33C4902F561222007880A3 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 3B33C48F2F561222007880A3 /* .gitignore */; };
+		3B33C4962F56124C007880A3 /* sonar-project.properties in Resources */ = {isa = PBXBuildFile; fileRef = 3B33C4952F56124C007880A3 /* sonar-project.properties */; };
+		3B33C4972F56124C007880A3 /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 3B33C4942F56124C007880A3 /* .swiftlint.yml */; };
+		3B33C4982F56124C007880A3 /* ci.yml in Resources */ = {isa = PBXBuildFile; fileRef = 3B33C4912F56124C007880A3 /* ci.yml */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		3BC17C472F543B7E009DD857 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +31,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3B33C48F2F561222007880A3 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		3B33C4912F56124C007880A3 /* ci.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = ci.yml; sourceTree = "<group>"; };
+		3B33C4942F56124C007880A3 /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
+		3B33C4952F56124C007880A3 /* sonar-project.properties */ = {isa = PBXFileReference; lastKnownFileType = text; path = "sonar-project.properties"; sourceTree = "<group>"; };
 		3BC17C372F543B7D009DD857 /* Oru.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Oru.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3BC17C462F543B7E009DD857 /* OruTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OruTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3BC17C502F543B7E009DD857 /* OruUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OruUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -72,9 +83,29 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3B33C4922F56124C007880A3 /* workflows */ = {
+			isa = PBXGroup;
+			children = (
+				3B33C4912F56124C007880A3 /* ci.yml */,
+			);
+			path = workflows;
+			sourceTree = "<group>";
+		};
+		3B33C4932F56124C007880A3 /* .github */ = {
+			isa = PBXGroup;
+			children = (
+				3B33C4922F56124C007880A3 /* workflows */,
+			);
+			path = .github;
+			sourceTree = "<group>";
+		};
 		3BC17C2E2F543B7D009DD857 = {
 			isa = PBXGroup;
 			children = (
+				3B33C4932F56124C007880A3 /* .github */,
+				3B33C4942F56124C007880A3 /* .swiftlint.yml */,
+				3B33C4952F56124C007880A3 /* sonar-project.properties */,
+				3B33C48F2F561222007880A3 /* .gitignore */,
 				3BC17C392F543B7D009DD857 /* Oru */,
 				3BC17C492F543B7E009DD857 /* OruTests */,
 				3BC17C532F543B7E009DD857 /* OruUITests */,
@@ -213,6 +244,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3B33C4902F561222007880A3 /* .gitignore in Resources */,
+				3B33C4962F56124C007880A3 /* sonar-project.properties in Resources */,
+				3B33C4972F56124C007880A3 /* .swiftlint.yml in Resources */,
+				3B33C4982F56124C007880A3 /* ci.yml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
