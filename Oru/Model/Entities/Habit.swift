@@ -48,7 +48,7 @@ final class Habit {
     ) {
         self.name = name
         self.type = type
-        self.scheduledDaysRaw = "" // Se inicializa vacía primero y se modifica al final porque necesita que el resto de variables de almacenamiento estén guardadas
+        self.scheduledDaysRaw = "" // Se inicializa vacía primero y se modifica al final
         self.dailyGoal = dailyGoal
         self.note = note
         self.creationDate = creationDate
