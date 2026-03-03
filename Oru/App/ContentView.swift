@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    // Variable para determinar si el usuario es nuevo o no
     @AppStorage("hasSeenWelcome") private var hasSeenWelcome = false
 
     var body: some View {

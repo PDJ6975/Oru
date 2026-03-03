@@ -25,21 +25,11 @@ private extension WelcomeView {
     var headerSection: some View {
         VStack(alignment: .leading, spacing: 20) {
             Text("Da forma a tu mejor versión")
-                .font(.system(size: 26, weight: .medium, design: .rounded))
-                .tracking(0.8)
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Color.indigo, Color.purple.opacity(0.9)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                    )
-                )
+                .oruTitle()
+                .foregroundStyle(LinearGradient.oruGradient)
 
             Text("Cada día es una hoja en blanco. Descubre cómo tus pequeños esfuerzos crean grandes resultados:")
-                .font(.system(size: 16, weight: .regular, design: .rounded))
-                .tracking(0.8)
-                .lineSpacing(3)
-                .foregroundStyle(.secondary)
+                .oruBody()
         }
     }
 
@@ -60,7 +50,7 @@ private extension WelcomeView {
         }
         .buttonStyle(.bordered)
         .buttonBorderShape(.roundedRectangle(radius: 14))
-        .tint(.indigo)
+        .tint(.oruPrimary)
     }
 }
 
@@ -74,13 +64,11 @@ private struct FeatureRow: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 19, weight: .light))
-                .foregroundStyle(Color.indigo)
-                .frame(width: 24)
+                .foregroundStyle(Color.oruPrimary)
+                .frame(width: 24) // Para alinear las filas
 
             Text(text)
-                .font(.system(size: 16, weight: .regular, design: .rounded))
-                .tracking(0.8)
-                .foregroundStyle(.secondary)
+                .oruBody()
         }
     }
 }
