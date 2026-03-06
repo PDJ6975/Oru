@@ -16,7 +16,7 @@ jobs:
 
   build-and-test:
     name: Build & Test
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
 
@@ -25,7 +25,6 @@ jobs:
           xcodebuild test \
             -scheme Oru \
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
-            IPHONEOS_DEPLOYMENT_TARGET=18.0 \
             CODE_SIGNING_ALLOWED=NO
 
       - name: Build Release
@@ -34,7 +33,6 @@ jobs:
             -scheme Oru \
             -destination 'generic/platform=iOS Simulator' \
             -configuration Release \
-            IPHONEOS_DEPLOYMENT_TARGET=18.0 \
             CODE_SIGNING_ALLOWED=NO
 
   gitleaks:

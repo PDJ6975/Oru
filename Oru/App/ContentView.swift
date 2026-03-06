@@ -1,12 +1,14 @@
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
-    
-    // Variable para determinar si el usuario es nuevo o no
-    @AppStorage("hasSeenWelcome") private var hasSeenWelcome = false
+
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @Environment(\.modelContext) private var modelContext
+    @State private var showNameRegistration = false
 
     var body: some View {
-        if hasSeenWelcome {
+        if hasCompletedOnboarding {
             TabView {
                 Text("Hábitos")
                     .tabItem {
@@ -28,10 +30,22 @@ struct ContentView: View {
                         Label("Timer", systemImage: "timer")
                     }
             }
+        } else if showNameRegistration {
+            NameRegistrationView(
+                viewModel: WelcomeViewModel(
+                    repository: UserRepository(modelContext: modelContext)
+                ),
+                onRegistered: {
+                    withAnimation {
+                        hasCompletedOnboarding = true
+                    }
+                }
+            )
+            .transition(.push(from: .trailing))
         } else {
             WelcomeView {
                 withAnimation {
-                    hasSeenWelcome = true
+                    showNameRegistration = true
                 }
             }
         }
@@ -40,4 +54,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .modelContainer(for: User.self, inMemory: true)
 }

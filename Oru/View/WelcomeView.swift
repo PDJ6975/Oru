@@ -44,7 +44,7 @@ private extension WelcomeView {
     var startButton: some View {
         Button(action: onStart) {
             Text("Empezar ahora")
-                .font(.system(size: 16, weight: .medium, design: .rounded))
+                .oruButton()
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
         }
