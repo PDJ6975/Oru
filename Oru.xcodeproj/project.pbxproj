@@ -203,7 +203,6 @@
 				3B33C4902F561222007880A3 /* .gitignore in Resources */,
 				3B33C4962F56124C007880A3 /* sonar-project.properties in Resources */,
 				3B7971AF2F56E17800BE27D3 /* cd.yml in Resources */,
-				3B4E98BC2F5AD4C900394045 /* CLAUDE.md in Resources */,
 				3B33C4972F56124C007880A3 /* .swiftlint.yml in Resources */,
 				3B33C4982F56124C007880A3 /* ci.yml in Resources */,
 			);
