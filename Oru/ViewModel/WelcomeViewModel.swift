@@ -7,9 +7,9 @@ class WelcomeViewModel {
     var name = ""
     var errorMessage: String?
 
-    private let repository: UserRepositoryProtocol
+    private let repository: UserRepositoryProtocol?
 
-    init(repository: UserRepositoryProtocol) {
+    init(repository: UserRepositoryProtocol? = nil) {
         self.repository = repository
     }
 
@@ -32,7 +32,7 @@ class WelcomeViewModel {
 
         do {
             let user = User(name: trimmedName)
-            try repository.addUser(user)
+            try repository?.addUser(user)
             errorMessage = nil
             return true
         } catch {

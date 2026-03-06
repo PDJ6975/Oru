@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 struct NameRegistrationView: View {
     @Bindable var viewModel: WelcomeViewModel
@@ -103,15 +102,8 @@ private extension NameRegistrationView {
 }
 
 #Preview {
-    do {
-        let container = try ModelContainer(for: User.self, configurations: .init(isStoredInMemoryOnly: true))
-        return NameRegistrationView(
-            viewModel: WelcomeViewModel(
-                repository: UserRepository(modelContext: container.mainContext)
-            ),
-            onRegistered: {}
-        )
-    } catch {
-        return Text("Error al crear el preview")
-    }
+    NameRegistrationView(
+        viewModel: WelcomeViewModel(),
+        onRegistered: {}
+    )
 }
