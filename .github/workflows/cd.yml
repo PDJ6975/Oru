@@ -9,7 +9,7 @@ on:
 jobs:
   release:
     name: Release
-    runs-on: macos-15
+    runs-on: macos-26
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     permissions:
       contents: write
@@ -33,7 +33,6 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             -configuration Release \
             -derivedDataPath build \
-            IPHONEOS_DEPLOYMENT_TARGET=18.0 \
             CODE_SIGNING_ALLOWED=NO
 
       - name: Package .app artifact
