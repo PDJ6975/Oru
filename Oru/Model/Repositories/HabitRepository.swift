@@ -13,6 +13,9 @@ protocol HabitRepositoryProtocol {
     func addHabit(_ habit: Habit) throws
     func deleteHabit(_ habit: Habit) throws
 
+    // MARK: - Compliance
+    func deleteCompliance(_ compliance: Compliance) throws
+
     // MARK: - Unit
     func fetchAllUnits() throws -> [Unit]
     func fetchBaseUnits() throws -> [Unit]
@@ -61,6 +64,13 @@ final class HabitRepository: HabitRepositoryProtocol {
 
     func deleteHabit(_ habit: Habit) throws {
         modelContext.delete(habit)
+        try saveChanges()
+    }
+
+    // MARK: - Compliance
+
+    func deleteCompliance(_ compliance: Compliance) throws {
+        modelContext.delete(compliance)
         try saveChanges()
     }
 

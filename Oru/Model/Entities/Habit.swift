@@ -3,6 +3,7 @@ import SwiftData
 
 @Model
 final class Habit {
+    var icon: String
     var name: String
     var type: HabitType
     var scheduledDaysRaw: String
@@ -37,6 +38,7 @@ final class Habit {
     }
 
     init(
+        icon: String = "✅",
         name: String,
         type: HabitType,
         scheduledDays: [Weekday],
@@ -46,6 +48,7 @@ final class Habit {
         startDate: Date = .now,
         status: HabitStatus = .active
     ) {
+        self.icon = icon
         self.name = name
         self.type = type
         self.scheduledDaysRaw = "" // Se inicializa vacía primero y se modifica al final

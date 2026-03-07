@@ -26,7 +26,6 @@ private extension WelcomeView {
         VStack(alignment: .leading, spacing: 20) {
             Text("Da forma a tu mejor versión")
                 .oruTitle()
-                .foregroundStyle(LinearGradient.oruGradient)
 
             Text("Cada día es una hoja en blanco. Descubre cómo tus pequeños esfuerzos crean grandes resultados:")
                 .oruBody()
