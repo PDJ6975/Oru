@@ -22,6 +22,9 @@ protocol HabitRepositoryProtocol {
     func addUnit(_ unit: Unit) throws
     func deleteUnit(_ unit: Unit) throws
 
+    // MARK: - Seed
+    func seedBaseUnitsIfNeeded() throws
+
     // MARK: - Persistencia
     func saveChanges() throws
 }
@@ -84,12 +87,8 @@ final class HabitRepository: HabitRepositoryProtocol {
     }
 
     func fetchBaseUnits() throws -> [Unit] {
-        let baseRaw = Unit.UnitOrigin.base.rawValue
-        let descriptor = FetchDescriptor<Unit>(
-            predicate: #Predicate { $0.origin.rawValue == baseRaw },
-            sortBy: [SortDescriptor(\.name)]
-        )
-        return try modelContext.fetch(descriptor)
+        let all = try fetchAllUnits()
+        return all.filter { $0.origin == .base }
     }
 
     func addUnit(_ unit: Unit) throws {
@@ -99,6 +98,22 @@ final class HabitRepository: HabitRepositoryProtocol {
 
     func deleteUnit(_ unit: Unit) throws {
         modelContext.delete(unit)
+        try saveChanges()
+    }
+
+    // MARK: - Seed
+
+    func seedBaseUnitsIfNeeded() throws {
+        let existing = try fetchAllUnits()
+        let existingNames = Set(existing.map(\.name))
+
+        let baseNames = ["uds", "min", "h", "km", "m", "kg", "g", "L", "cal", "págs"]
+        let newUnits = baseNames.filter { !existingNames.contains($0) }
+        guard !newUnits.isEmpty else { return }
+
+        for name in newUnits {
+            modelContext.insert(Unit(name: name, origin: .base))
+        }
         try saveChanges()
     }
 

@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - Colors
 
 extension Color {
-    static let oruPrimary = Color.indigo
+    static let oruPrimary = Color.cyan
     static let oruSecondary = Color.purple
     static let oruBackground = Color.indigo.opacity(0.2) // A establecer más adelante
 }
@@ -50,27 +50,65 @@ private struct OruButtonModifier: ViewModifier {
     }
 }
 
-// MARK: - Input
+// MARK: - Input Big
 
-private struct OruInputModifier: ViewModifier {
+private struct OruInputBigModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 22, weight: .light, design: .rounded))
+            .tracking(0.8)
+    }
+}
+
+// MARK: - Input Medium
+
+private struct OruInputMediumModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(.system(size: 17, weight: .regular, design: .rounded))
     }
 }
 
-// MARK: - Text (texto de elemento, como habit name)
+// MARK: - Input Small
 
-private struct OruTextModifier: ViewModifier {
+private struct OruInputSmallModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 15, weight: .regular, design: .rounded))
+    }
+}
+
+// MARK: - Pill Circle
+
+private struct OruPillCircleModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 13, weight: .semibold, design: .rounded))
+    }
+}
+
+// MARK: - Text Primary
+
+private struct OruTextPrimaryModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(.system(size: 16, weight: .medium, design: .rounded))
     }
 }
 
-// MARK: - Note (texto secundario pequeño, como habit note)
+// MARK: - Text Secondary
 
-private struct OruNoteModifier: ViewModifier {
+private struct OruTextSecondaryModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 13, weight: .regular, design: .rounded))
+            .foregroundStyle(.secondary)
+    }
+}
+
+// MARK: - Tip (consejos con icono)
+
+private struct OruTipModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(.system(size: 13, weight: .regular, design: .rounded))
@@ -136,16 +174,32 @@ extension View {
         modifier(OruButtonModifier())
     }
 
-    func oruInput() -> some View {
-        modifier(OruInputModifier())
+    func oruInputBig() -> some View {
+        modifier(OruInputBigModifier())
     }
 
-    func oruText() -> some View {
-        modifier(OruTextModifier())
+    func oruInputMedium() -> some View {
+        modifier(OruInputMediumModifier())
     }
 
-    func oruNote() -> some View {
-        modifier(OruNoteModifier())
+    func oruInputSmall() -> some View {
+        modifier(OruInputSmallModifier())
+    }
+
+    func oruPillCircle() -> some View {
+        modifier(OruPillCircleModifier())
+    }
+
+    func oruTextPrimary() -> some View {
+        modifier(OruTextPrimaryModifier())
+    }
+
+    func oruTextSecondary() -> some View {
+        modifier(OruTextSecondaryModifier())
+    }
+
+    func oruTip() -> some View {
+        modifier(OruTipModifier())
     }
 
     func oruAccent() -> some View {

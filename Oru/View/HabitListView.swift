@@ -4,7 +4,8 @@ import SwiftData
 struct HabitListView: View {
 
     var viewModel: HabitViewModel
-    
+    @State private var showCreateForm = false
+
     private func todayFormatted() -> String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "es_ES")
@@ -30,6 +31,18 @@ struct HabitListView: View {
                 Text(todayFormatted())
                     .oruAccent()
             }
+            ToolbarItem(placement: .primaryAction) {
+                Menu {
+                    Button("Nuevo hábito", systemImage: "plus") {
+                        showCreateForm = true
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                }
+            }
+        }
+        .sheet(isPresented: $showCreateForm) {
+            HabitFormView(viewModel: viewModel)
         }
         .onAppear {
             viewModel.loadHabits()
@@ -79,10 +92,10 @@ struct HabitListView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("Día de descanso")
-                    .oruText()
+                    .oruTextPrimary()
 
                 Text("Recarga energía y disfruta de tu tiempo.")
-                    .oruNote()
+                    .oruTextSecondary()
             }
         }
         .padding(.vertical, 8)
@@ -132,12 +145,12 @@ private struct BooleanHabitRow: View {
             .frame(width: 28)
 
             VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 6) {
+                HStack(spacing: 8) {
                     Text(habit.icon)
                         .font(.system(size: 16))
 
                     Text(habit.name)
-                        .oruText()
+                        .oruTextPrimary()
                         .lineLimit(1)
                         .strikethrough(isCompleted)
                         .foregroundStyle(isCompleted ? .secondary : .primary)
@@ -145,7 +158,7 @@ private struct BooleanHabitRow: View {
 
                 if let note = habit.note, !note.isEmpty {
                     Text(note)
-                        .oruNote()
+                        .oruTextSecondary()
                         .lineLimit(1)
                 }
             }
@@ -203,12 +216,12 @@ private struct QuantityHabitRow: View {
 
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 8) {
-                        HStack(spacing: 6) {
+                        HStack(spacing: 8) {
                             Text(habit.icon)
                                 .font(.system(size: 16))
 
                             Text(habit.name)
-                                .oruText()
+                                .oruTextPrimary()
                                 .lineLimit(1)
                                 .truncationMode(.tail)
                         }
@@ -222,7 +235,7 @@ private struct QuantityHabitRow: View {
 
                     if let note = habit.note, !note.isEmpty {
                         Text(note)
-                            .oruNote()
+                            .oruTextSecondary()
                             .lineLimit(1)
                     }
                 }
@@ -241,11 +254,11 @@ private struct QuantityHabitRow: View {
                     TextField("0", text: $inputText)
                         .keyboardType(.decimalPad)
                         .focused($isFocused)
-                        .oruText()
+                        .oruTextPrimary()
 
                     if let unit = habit.unit {
                         Text(unit.name)
-                            .oruNote()
+                            .oruTextSecondary()
                     }
                 }
                 .padding(.horizontal, 12)
@@ -297,13 +310,13 @@ private struct HabitRow: View {
     let today: Habit.Weekday
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 8) {
             Text(habit.icon)
                 .font(.system(size: 19))
                 .frame(width: 28)
 
             Text(habit.name)
-                .oruText()
+                .oruTextPrimary()
                 .lineLimit(1)
 
             Spacer()

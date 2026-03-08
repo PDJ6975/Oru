@@ -44,7 +44,7 @@ private extension NameRegistrationView {
                     .oruLabel()
 
                 TextField("Tu nombre", text: $viewModel.name)
-                    .oruInput()
+                    .oruInputMedium()
                     .padding(14)
                     .glassEffect(.regular, in: .rect(cornerRadius: 12))
                     .focused($isNameFocused)
@@ -69,8 +69,7 @@ private extension NameRegistrationView {
                     .foregroundStyle(Color.oruPrimary)
 
                 Text("Elige con cariño. Este nombre será definitivo.")
-                    .font(.system(size: 13, weight: .regular, design: .rounded))
-                    .foregroundStyle(.secondary)
+                    .oruTip()
             }
             .frame(maxWidth: .infinity)
         }

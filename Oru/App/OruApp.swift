@@ -23,6 +23,12 @@ struct OruApp: App {
         }
     }()
 
+    init() {
+        let context = sharedModelContainer.mainContext
+        let repository = HabitRepository(modelContext: context)
+        try? repository.seedBaseUnitsIfNeeded()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

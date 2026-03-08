@@ -67,7 +67,7 @@ private struct FeatureRow: View {
                 .frame(width: 24) // Para alinear las filas
 
             Text(text)
-                .oruBody()
+                .oruLabel()
         }
     }
 }

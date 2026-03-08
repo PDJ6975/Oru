@@ -76,4 +76,15 @@ class HabitViewModel {
         let mapped = calendarWeekday == 1 ? 7 : calendarWeekday - 1
         return Habit.Weekday(rawValue: mapped) ?? .monday
     }
+
+    // MARK: - Creación de hábitos
+
+    func addHabit(_ habit: Habit) {
+        try? repository.addHabit(habit)
+        loadHabits()
+    }
+
+    func fetchUnits() -> [Unit] {
+        (try? repository.fetchAllUnits()) ?? []
+    }
 }
