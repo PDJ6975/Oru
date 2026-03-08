@@ -128,6 +128,17 @@ private struct OruAccentModifier: ViewModifier {
     }
 }
 
+// MARK: - Navigation Icon Secondary
+
+private struct OruNavigationIconSecondaryModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(Color.secondary)
+            .frame(width: 30, height: 30)
+    }
+}
+
 // MARK: - Pulse Animation
 
 private struct OruPulseModifier: ViewModifier {
@@ -204,6 +215,10 @@ extension View {
 
     func oruAccent() -> some View {
         modifier(OruAccentModifier())
+    }
+
+    func oruNavigationIconSecondary() -> some View {
+        modifier(OruNavigationIconSecondaryModifier())
     }
 
     func oruPulse(scale: CGFloat = 1.25, action: @escaping () -> Void) -> some View {

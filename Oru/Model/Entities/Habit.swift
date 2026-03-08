@@ -38,7 +38,7 @@ final class Habit {
     }
 
     init(
-        icon: String = "✅",
+        icon: String,
         name: String,
         type: HabitType,
         scheduledDays: [Weekday],

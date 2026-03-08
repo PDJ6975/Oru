@@ -1,60 +1,15 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - Teclado de emojis
+// MARK: - Teclado de emojis (rawValue no público pero funcional y estable)
 
-private struct EmojiTextField: UIViewRepresentable {
-    @Binding var text: String
+private extension UIKeyboardType {
+    static let emoji = UIKeyboardType(rawValue: 124) ?? .default
+}
 
-    func makeUIView(context: Context) -> UITextField {
-        let field = EmojiOnlyField()
-        field.text = text
-        field.font = .systemFont(ofSize: 30)
-        field.textAlignment = .center
-        field.delegate = context.coordinator
-        field.tintColor = .clear
-        field.backgroundColor = .clear
-        field.returnKeyType = .done
-        return field
-    }
-
-    func updateUIView(_ uiView: UITextField, context: Context) {
-        uiView.text = text
-    }
-
-    func makeCoordinator() -> Coordinator { Coordinator(text: $text) }
-
-    final class Coordinator: NSObject, UITextFieldDelegate {
-        @Binding var text: String
-        init(text: Binding<String>) { _text = text }
-
-        func textField(
-            _ textField: UITextField,
-            shouldChangeCharactersIn range: NSRange,
-            replacementString string: String
-        ) -> Bool {
-            if string.unicodeScalars.allSatisfy({ $0.properties.isEmoji && $0.properties.isEmojiPresentation })
-                || string.isEmpty {
-                if !string.isEmpty {
-                    text = string
-                    textField.resignFirstResponder()
-                }
-                return true
-            }
-            return false
-        }
-
-        func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-            textField.resignFirstResponder()
-            return true
-        }
-    }
-
-    // Campo que siempre abre el teclado de emojis
-    private final class EmojiOnlyField: UITextField {
-        override var textInputMode: UITextInputMode? {
-            UITextInputMode.activeInputModes.first { $0.primaryLanguage == "emoji" }
-        }
+private extension Character {
+    var isEmoji: Bool {
+        unicodeScalars.first?.properties.isEmoji == true
     }
 }
 
@@ -77,11 +32,11 @@ struct HabitFormView: View {
     @FocusState private var focusedField: Field?
 
     private enum Field {
-        case name, goal, note
+        case emoji, name, goal, note
     }
 
     private var isValid: Bool {
-        !name.trimmingCharacters(in: .whitespaces).isEmpty && !selectedDays.isEmpty
+        viewModel.isValidHabit(name: name, selectedDays: selectedDays)
     }
 
     private var availableUnits: [Unit] {
@@ -118,7 +73,6 @@ struct HabitFormView: View {
         }
         .scrollDismissesKeyboard(.immediately)
         .onTapGesture { focusedField = nil }
-        .animation(.easeInOut(duration: 0.25), value: habitType)
     }
 
     // MARK: - Header con botón cerrar
@@ -130,9 +84,7 @@ struct HabitFormView: View {
                 dismiss()
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color.secondary)
-                    .frame(width: 30, height: 30)
+                    .oruNavigationIconSecondary()
             }
             .glassEffect(.regular.interactive(), in: .circle)
         }
@@ -142,14 +94,29 @@ struct HabitFormView: View {
 
     private var iconAndNameSection: some View {
         HStack(spacing: 14) {
-            EmojiTextField(text: $icon)
+            TextField("", text: $icon)
+                .keyboardType(.emoji)
+                .font(.system(size: 30))
+                .multilineTextAlignment(.center)
+                .tint(.clear)
                 .frame(width: 46, height: 46)
-                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 14))
+                .focused($focusedField, equals: .emoji)
+                .glassEffect(.regular, in: .rect(cornerRadius: 14))
+                // Garantizar un solo icono
+                .onChange(of: icon) { _, newValue in
+                    // Aseguramos que es un emoji
+                    let emojis = newValue.filter { $0.isEmoji }
+                    // Si se borra volvemos al por defecto
+                    // Si se escribe uno nuevo, nos quedamos con el último
+                    icon = emojis.isEmpty ? "🌟" : String(emojis.suffix(1))
+                }
 
             TextField("Añade tu nuevo hábito...", text: $name)
                 .oruInputBig()
-                .foregroundStyle(.primary)
                 .focused($focusedField, equals: .name)
+                .onChange(of: name) { _, newValue in
+                    name = viewModel.clampName(newValue)
+                }
         }
     }
 
@@ -185,7 +152,6 @@ struct HabitFormView: View {
                 .background(isSelected ? Color.oruPrimary : .clear, in: .circle)
         }
         .glassEffect(.regular, in: .circle)
-        .buttonStyle(.plain)
         .sensoryFeedback(.selection, trigger: isSelected)
     }
 
@@ -219,6 +185,9 @@ struct HabitFormView: View {
                     .keyboardType(.decimalPad)
                     .oruInputSmall()
                     .focused($focusedField, equals: .goal)
+                    .onChange(of: dailyGoal) { _, newValue in
+                        dailyGoal = viewModel.clampGoal(newValue)
+                    }
 
                 Spacer()
 
@@ -256,8 +225,10 @@ struct HabitFormView: View {
             axis: .vertical
         )
         .oruInputSmall()
-        .lineLimit(4...8)
         .focused($focusedField, equals: .note)
+        .onChange(of: note) { _, newValue in
+            note = viewModel.clampNote(newValue)
+        }
         .padding(16)
         .frame(minHeight: 160, alignment: .topLeading)
         .glassEffect(.regular, in: .rect(cornerRadius: 16))

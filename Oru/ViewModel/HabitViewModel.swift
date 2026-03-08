@@ -77,6 +77,28 @@ class HabitViewModel {
         return Habit.Weekday(rawValue: mapped) ?? .monday
     }
 
+    // MARK: - Validación
+
+    static let maxNameLength = 40
+    static let maxGoalLength = 5
+    static let maxNoteLength = 200
+
+    func isValidHabit(name: String, selectedDays: Set<Habit.Weekday>) -> Bool {
+        !name.trimmingCharacters(in: .whitespaces).isEmpty && !selectedDays.isEmpty
+    }
+
+    func clampName(_ value: String) -> String {
+        String(value.prefix(Self.maxNameLength))
+    }
+
+    func clampGoal(_ value: String) -> String {
+        String(value.prefix(Self.maxGoalLength))
+    }
+
+    func clampNote(_ value: String) -> String {
+        String(value.prefix(Self.maxNoteLength))
+    }
+
     // MARK: - Creación de hábitos
 
     func addHabit(_ habit: Habit) {
