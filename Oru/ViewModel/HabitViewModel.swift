@@ -7,6 +7,7 @@ class HabitViewModel {
     private let repository: HabitRepositoryProtocol
 
     var habits: [Habit] = []
+    var lastError: String?
 
     var todayHabits: [Habit] {
         let today = currentWeekday()
@@ -26,6 +27,7 @@ class HabitViewModel {
         do {
             habits = try repository.fetchAllHabits().filter { $0.status == .active }
         } catch {
+            lastError = "No se pudieron cargar los hábitos: \(error.localizedDescription)"
             habits = []
         }
     }
@@ -40,25 +42,33 @@ class HabitViewModel {
             let compliance = Compliance(date: .now, completed: true)
             compliance.habit = habit
         }
-        try? repository.saveChanges()
+        do {
+            try repository.saveChanges()
+        } catch {
+            lastError = "No se pudo guardar el cambio: \(error.localizedDescription)"
+        }
     }
 
     // Si la cantidad es 0 y ya existe un compliance, lo elimina
     // Si la cantidad es > 0, crea o actualiza el compliance
     func recordAmount(_ amount: Double, for habit: Habit) {
-        if amount <= 0 {
-            if let compliance = todayCompliance(for: habit) {
-                habit.compliances.removeAll { $0 === compliance }
-                try? repository.deleteCompliance(compliance)
+        do {
+            if amount <= 0 {
+                if let compliance = todayCompliance(for: habit) {
+                    habit.compliances.removeAll { $0 === compliance }
+                    try repository.deleteCompliance(compliance)
+                }
+            } else if let compliance = todayCompliance(for: habit) {
+                compliance.recordedAmount = amount
+                compliance.completed = true
+            } else {
+                let compliance = Compliance(date: .now, completed: true, recordedAmount: amount)
+                compliance.habit = habit
             }
-        } else if let compliance = todayCompliance(for: habit) {
-            compliance.recordedAmount = amount
-            compliance.completed = true
-        } else {
-            let compliance = Compliance(date: .now, completed: true, recordedAmount: amount)
-            compliance.habit = habit
+            try repository.saveChanges()
+        } catch {
+            lastError = "No se pudo registrar la cantidad: \(error.localizedDescription)"
         }
-        try? repository.saveChanges()
     }
     
     // Devuelve si existe un registro de cumplimiento para un hábito en el día actual
@@ -102,11 +112,20 @@ class HabitViewModel {
     // MARK: - Creación de hábitos
 
     func addHabit(_ habit: Habit) {
-        try? repository.addHabit(habit)
-        loadHabits()
+        do {
+            try repository.addHabit(habit)
+            loadHabits()
+        } catch {
+            lastError = "No se pudo crear el hábito: \(error.localizedDescription)"
+        }
     }
 
     func fetchUnits() -> [Unit] {
-        (try? repository.fetchAllUnits()) ?? []
+        do {
+            return try repository.fetchAllUnits()
+        } catch {
+            lastError = "No se pudieron cargar las unidades: \(error.localizedDescription)"
+            return []
+        }
     }
 }

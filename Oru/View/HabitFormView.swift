@@ -28,6 +28,8 @@ struct HabitFormView: View {
     @State private var selectedUnit: Unit?
     @State private var note = ""
     @State private var confirmTap = false
+    @State private var isCreating = false
+    @State private var units: [Unit] = []
 
     @FocusState private var focusedField: Field?
 
@@ -37,10 +39,6 @@ struct HabitFormView: View {
 
     private var isValid: Bool {
         viewModel.isValidHabit(name: name, selectedDays: selectedDays)
-    }
-
-    private var availableUnits: [Unit] {
-        viewModel.fetchUnits()
     }
 
     // MARK: - Body
@@ -73,6 +71,19 @@ struct HabitFormView: View {
         }
         .scrollDismissesKeyboard(.immediately)
         .onTapGesture { focusedField = nil }
+        .sensoryFeedback(.selection, trigger: focusedField)
+        .task { units = viewModel.fetchUnits() }
+        .alert(
+            "Error",
+            isPresented: Binding(
+                get: { viewModel.lastError != nil },
+                set: { if !$0 { viewModel.lastError = nil } }
+            )
+        ) {
+            Button("Aceptar", role: .cancel) { }
+        } message: {
+            Text(viewModel.lastError ?? "")
+        }
     }
 
     // MARK: - Header con botón cerrar
@@ -102,12 +113,8 @@ struct HabitFormView: View {
                 .frame(width: 46, height: 46)
                 .focused($focusedField, equals: .emoji)
                 .glassEffect(.regular, in: .rect(cornerRadius: 14))
-                // Garantizar un solo icono
                 .onChange(of: icon) { _, newValue in
-                    // Aseguramos que es un emoji
                     let emojis = newValue.filter { $0.isEmoji }
-                    // Si se borra volvemos al por defecto
-                    // Si se escribe uno nuevo, nos quedamos con el último
                     icon = emojis.isEmpty ? "🌟" : String(emojis.suffix(1))
                 }
 
@@ -201,7 +208,7 @@ struct HabitFormView: View {
 
     private var unitPicker: some View {
         Menu {
-            ForEach(availableUnits, id: \.name) { unit in
+            ForEach(units, id: \.name) { unit in
                 Button(unit.name) { selectedUnit = unit }
             }
         } label: {
@@ -251,7 +258,7 @@ struct HabitFormView: View {
                     in: .rect(cornerRadius: 16)
                 )
         }
-        .disabled(!isValid)
+        .disabled(!isValid || isCreating)
         .sensoryFeedback(.success, trigger: confirmTap)
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
     }
@@ -273,8 +280,12 @@ struct HabitFormView: View {
     // MARK: - Creación
 
     private func createHabit() {
+        guard !isCreating else { return }
+        isCreating = true
+
         let normalized = dailyGoal.replacingOccurrences(of: ",", with: ".")
         let goal = Double(normalized)
+        let trimmedNote = note.trimmingCharacters(in: .whitespaces)
 
         let habit = Habit(
             icon: icon,
@@ -282,15 +293,18 @@ struct HabitFormView: View {
             type: habitType,
             scheduledDays: Array(selectedDays).sorted { $0.rawValue < $1.rawValue },
             dailyGoal: goal,
-            note: note.trimmingCharacters(in: .whitespaces).isEmpty
-                ? nil
-                : note.trimmingCharacters(in: .whitespaces)
+            note: trimmedNote.isEmpty ? nil : trimmedNote
         )
 
         habit.unit = selectedUnit
 
         viewModel.addHabit(habit)
-        dismiss()
+
+        if viewModel.lastError == nil {
+            dismiss()
+        } else {
+            isCreating = false
+        }
     }
 }
 
