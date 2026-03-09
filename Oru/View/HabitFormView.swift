@@ -46,8 +46,8 @@ struct HabitFormView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 30) {
-                VStack(alignment: .leading, spacing: 1) {
+            VStack(spacing: 30) {
+                VStack(spacing: 1) {
                     header
                     iconAndNameSection
                 }
@@ -55,22 +55,18 @@ struct HabitFormView: View {
                 typeSection
                 goalSection
                 noteSection
-
-                Spacer()
-                
-                Spacer()
-
-                VStack(spacing: 18) {
-                    confirmButton
-                    consolidationHint
-                }
-                .frame(maxWidth: .infinity)
             }
             .padding(.horizontal, 24)
             .padding(.top, 18)
-            .padding(.bottom, 32)
         }
         .scrollDismissesKeyboard(.immediately)
+        .safeAreaInset(edge: .bottom) {
+            VStack(spacing: 18) {
+                confirmButton
+                consolidationHint
+            }
+        }
+        .ignoresSafeArea(.keyboard)
         .onTapGesture { focusedField = nil }
         .sensoryFeedback(.selection, trigger: focusedField)
         .task { units = viewModel.fetchUnits() }
