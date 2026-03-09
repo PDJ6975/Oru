@@ -21,6 +21,7 @@ struct HabitFormView: View {
     // MARK: - Estado del formulario
 
     @State private var icon = "🌟"
+    @State private var iconSelection: TextSelection?
     @State private var name = ""
     @State private var selectedDays: Set<Habit.Weekday> = Set(Habit.Weekday.allCases)
     @State private var habitType: Habit.HabitType = .boolean
@@ -105,7 +106,7 @@ struct HabitFormView: View {
 
     private var iconAndNameSection: some View {
         HStack(spacing: 14) {
-            TextField("", text: $icon)
+            TextField("", text: $icon, selection: $iconSelection)
                 .keyboardType(.emoji)
                 .font(.system(size: 30))
                 .multilineTextAlignment(.center)
@@ -113,6 +114,13 @@ struct HabitFormView: View {
                 .frame(width: 46, height: 46)
                 .focused($focusedField, equals: .emoji)
                 .glassEffect(.regular, in: .rect(cornerRadius: 14))
+                .onChange(of: focusedField) { _, newValue in
+                    if newValue == .emoji {
+                        iconSelection = TextSelection(
+                            range: icon.startIndex..<icon.endIndex
+                        )
+                    }
+                }
                 .onChange(of: icon) { _, newValue in
                     let emojis = newValue.filter { $0.isEmoji }
                     icon = emojis.isEmpty ? "🌟" : String(emojis.suffix(1))
