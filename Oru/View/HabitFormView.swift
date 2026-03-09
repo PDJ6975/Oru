@@ -16,6 +16,7 @@ private extension Character {
 struct HabitFormView: View {
 
     var viewModel: HabitViewModel
+    var habitToEdit: Habit?
     @Environment(\.dismiss) private var dismiss
 
     // MARK: - Estado del formulario
@@ -29,8 +30,10 @@ struct HabitFormView: View {
     @State private var selectedUnit: Unit?
     @State private var note = ""
     @State private var confirmTap = false
-    @State private var isCreating = false
+    @State private var isSaving = false
     @State private var units: [Unit] = []
+
+    private var isEditing: Bool { habitToEdit != nil }
 
     @FocusState private var focusedField: Field?
 
@@ -53,7 +56,10 @@ struct HabitFormView: View {
                 }
                 daysSection
                 typeSection
-                goalSection
+                if habitType == .quantity {
+                    goalSection
+                        .transition(.blurReplace)
+                }
                 noteSection
             }
             .padding(.horizontal, 24)
@@ -69,7 +75,20 @@ struct HabitFormView: View {
         .ignoresSafeArea(.keyboard)
         .onTapGesture { focusedField = nil }
         .sensoryFeedback(.selection, trigger: focusedField)
-        .task { units = viewModel.fetchUnits() }
+        .task {
+            units = viewModel.fetchUnits()
+            if let habit = habitToEdit {
+                icon = habit.icon
+                name = habit.name
+                selectedDays = Set(habit.scheduledDays)
+                habitType = habit.type
+                if let goal = habit.dailyGoal {
+                    dailyGoal = goal.formatted
+                }
+                selectedUnit = habit.unit
+                note = habit.note ?? ""
+            }
+        }
         .alert(
             "Error",
             isPresented: Binding(
@@ -180,7 +199,14 @@ struct HabitFormView: View {
             }
             .pickerStyle(.segmented)
             .sensoryFeedback(.selection, trigger: habitType)
+            .onChange(of: habitType) { _, newValue in
+                if newValue == .boolean {
+                    dailyGoal = ""
+                    selectedUnit = nil
+                }
+            }
         }
+        .animation(.smooth, value: habitType)
     }
 
     // MARK: - Objetivo
@@ -250,7 +276,7 @@ struct HabitFormView: View {
     private var confirmButton: some View {
         Button {
             confirmTap.toggle()
-            createHabit()
+            saveHabit()
         } label: {
             Image(systemName: "checkmark")
                 .font(.system(size: 18, weight: .bold))
@@ -262,7 +288,7 @@ struct HabitFormView: View {
                     in: .rect(cornerRadius: 16)
                 )
         }
-        .disabled(!isValid || isCreating)
+        .disabled(!isValid || isSaving)
         .sensoryFeedback(.success, trigger: confirmTap)
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
     }
@@ -271,43 +297,58 @@ struct HabitFormView: View {
 
     private var consolidationHint: some View {
         HStack(alignment: .top, spacing: 6) {
-            Image(systemName: "lightbulb.max")
+            Image(systemName: isEditing ? "heart" : "lightbulb.max")
                 .font(.system(size: 11))
                 .foregroundStyle(Color.oruPrimary)
-            Text("Este hábito se considerará consolidado y parte de tu identidad tras cumplirlo por 66 días.")
+            Text(isEditing
+                 ? "Moldea este hábito a tu propio ritmo."
+                 : "Este hábito se considerará consolidado y parte de tu identidad tras cumplirlo por 66 días.")
                 .oruTip()
                 .multilineTextAlignment(.center)
         }
         .padding(.horizontal, 8)
     }
 
-    // MARK: - Creación
+    // MARK: - Guardar (creación o edición)
 
-    private func createHabit() {
-        guard !isCreating else { return }
-        isCreating = true
+    private func saveHabit() {
+        guard !isSaving else { return }
+        isSaving = true
 
         let normalized = dailyGoal.replacingOccurrences(of: ",", with: ".")
-        let goal = Double(normalized)
+        let goal = habitType == .quantity ? Double(normalized) : nil
+        let unit = habitType == .quantity ? selectedUnit : nil
         let trimmedNote = note.trimmingCharacters(in: .whitespaces)
+        let sortedDays = Array(selectedDays).sorted { $0.rawValue < $1.rawValue }
 
-        let habit = Habit(
-            icon: icon,
-            name: name.trimmingCharacters(in: .whitespaces),
-            type: habitType,
-            scheduledDays: Array(selectedDays).sorted { $0.rawValue < $1.rawValue },
-            dailyGoal: goal,
-            note: trimmedNote.isEmpty ? nil : trimmedNote
-        )
-
-        habit.unit = selectedUnit
-
-        viewModel.addHabit(habit)
+        if let habit = habitToEdit {
+            let data = HabitViewModel.FormData(
+                icon: icon,
+                name: name.trimmingCharacters(in: .whitespaces),
+                type: habitType,
+                scheduledDays: sortedDays,
+                dailyGoal: goal,
+                note: trimmedNote.isEmpty ? nil : trimmedNote,
+                unit: unit
+            )
+            viewModel.updateHabit(habit, with: data)
+        } else {
+            let habit = Habit(
+                icon: icon,
+                name: name.trimmingCharacters(in: .whitespaces),
+                type: habitType,
+                scheduledDays: sortedDays,
+                dailyGoal: goal,
+                note: trimmedNote.isEmpty ? nil : trimmedNote
+            )
+            habit.unit = unit
+            viewModel.addHabit(habit)
+        }
 
         if viewModel.lastError == nil {
             dismiss()
         } else {
-            isCreating = false
+            isSaving = false
         }
     }
 }

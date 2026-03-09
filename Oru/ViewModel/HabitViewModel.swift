@@ -109,7 +109,7 @@ class HabitViewModel {
         String(value.prefix(Self.maxNoteLength))
     }
 
-    // MARK: - Creación de hábitos
+    // MARK: - Creación y edición de hábitos
 
     func addHabit(_ habit: Habit) {
         do {
@@ -120,6 +120,22 @@ class HabitViewModel {
         }
     }
 
+    func updateHabit(_ habit: Habit, with data: FormData) {
+        habit.icon = data.icon
+        habit.name = data.name
+        habit.type = data.type
+        habit.scheduledDays = data.scheduledDays
+        habit.dailyGoal = data.dailyGoal
+        habit.note = data.note
+        habit.unit = data.unit
+        do {
+            try repository.saveChanges()
+            loadHabits()
+        } catch {
+            lastError = "No se pudo actualizar el hábito: \(error.localizedDescription)"
+        }
+    }
+
     func fetchUnits() -> [Unit] {
         do {
             return try repository.fetchAllUnits()
@@ -127,5 +143,17 @@ class HabitViewModel {
             lastError = "No se pudieron cargar las unidades: \(error.localizedDescription)"
             return []
         }
+    }
+
+    // MARK: - Tipos auxiliares
+
+    struct FormData {
+        let icon: String
+        let name: String
+        let type: Habit.HabitType
+        let scheduledDays: [Habit.Weekday]
+        let dailyGoal: Double?
+        let note: String?
+        let unit: Unit?
     }
 }

@@ -5,6 +5,7 @@ struct HabitListView: View {
 
     var viewModel: HabitViewModel
     @State private var showCreateForm = false
+    @State private var habitToEdit: Habit?
 
     private func todayFormatted() -> String {
         let formatter = DateFormatter()
@@ -44,6 +45,9 @@ struct HabitListView: View {
         .sheet(isPresented: $showCreateForm) {
             HabitFormView(viewModel: viewModel)
         }
+        .sheet(item: $habitToEdit) { habit in
+            HabitFormView(viewModel: viewModel, habitToEdit: habit)
+        }
         .onAppear {
             viewModel.loadHabits()
         }
@@ -70,6 +74,14 @@ struct HabitListView: View {
                 } else {
                     ForEach(viewModel.todayHabits) { habit in
                         TodayHabitRow(habit: habit, viewModel: viewModel)
+                            .swipeActions(edge: .trailing) {
+                                Button {
+                                    habitToEdit = habit
+                                } label: {
+                                    Label("Editar", systemImage: "pencil")
+                                }
+                                .tint(.oruPrimary)
+                            }
                     }
                 }
             }
@@ -78,6 +90,14 @@ struct HabitListView: View {
                 Section("En pausa") {
                     ForEach(viewModel.otherHabits) { habit in
                         HabitRow(habit: habit, today: viewModel.currentWeekday())
+                            .swipeActions(edge: .trailing) {
+                                Button {
+                                    habitToEdit = habit
+                                } label: {
+                                    Label("Editar", systemImage: "pencil")
+                                }
+                                .tint(.oruPrimary)
+                            }
                     }
                 }
             }
@@ -196,7 +216,7 @@ private struct QuantityHabitRow: View {
                     if isEntering {
                         save()
                     } else {
-                        inputText = formatRaw(todayCompliance?.recordedAmount ?? 0)
+                        inputText = (todayCompliance?.recordedAmount ?? 0).formatted
                         isEntering = true
                     }
                 } label: {
@@ -242,7 +262,7 @@ private struct QuantityHabitRow: View {
 
                 Spacer()
 
-                Text(formatAmount(todayCompliance?.recordedAmount ?? 0, unit: habit.unit))
+                Text((todayCompliance?.recordedAmount ?? 0).formatted(unit: habit.unit))
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundStyle(hasRecordedAmount
                         ? Color.oruPrimary.opacity(0.8)
@@ -287,18 +307,12 @@ private struct QuantityHabitRow: View {
         HStack(spacing: 4) {
             Image(systemName: "info.circle")
                 .font(.system(size: 10))
-            Text(formatAmount(goal, unit: habit.unit))
+            Text(goal.formatted(unit: habit.unit))
         }
         .font(.system(size: 12, weight: .medium, design: .rounded))
         .padding(.horizontal, 8)
         .padding(.vertical, 3)
         .glassEffect(.regular)
-    }
-
-    private func formatRaw(_ value: Double) -> String {
-        value.truncatingRemainder(dividingBy: 1) == 0
-            ? String(format: "%.0f", value)
-            : String(format: "%.1f", value)
     }
 }
 
@@ -338,15 +352,6 @@ private struct HabitRow: View {
         }
         return day == today ? .oruPrimary : .primary
     }
-}
-
-// MARK: - Helpers
-
-private func formatAmount(_ value: Double, unit: Unit?) -> String {
-    let raw = value.truncatingRemainder(dividingBy: 1) == 0
-        ? String(format: "%.0f", value)
-        : String(format: "%.1f", value)
-    return unit.map { "\(raw) \($0.name)" } ?? raw
 }
 
 // MARK: - Weekday Short Label
