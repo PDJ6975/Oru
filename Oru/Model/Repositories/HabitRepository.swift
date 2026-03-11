@@ -21,6 +21,7 @@ protocol HabitRepositoryProtocol {
     func fetchBaseUnits() throws -> [Unit]
     func addUnit(_ unit: Unit) throws
     func deleteUnit(_ unit: Unit) throws
+    func countHabitsUsingUnit(_ unit: Unit) throws -> Int
 
     // MARK: - Seed
     func seedBaseUnitsIfNeeded() throws
@@ -99,6 +100,14 @@ final class HabitRepository: HabitRepositoryProtocol {
     func deleteUnit(_ unit: Unit) throws {
         modelContext.delete(unit)
         try saveChanges()
+    }
+
+    func countHabitsUsingUnit(_ unit: Unit) throws -> Int {
+        let unitID = unit.persistentModelID
+        let descriptor = FetchDescriptor<Habit>(
+            predicate: #Predicate { $0.unit?.persistentModelID == unitID }
+        )
+        return try modelContext.fetchCount(descriptor)
     }
 
     // MARK: - Seed

@@ -87,6 +87,60 @@ class HabitViewModel {
         return Habit.Weekday(rawValue: mapped) ?? .monday
     }
 
+    // MARK: - Gestión de unidades
+
+    static let maxCustomUnitsCount = 20
+    static let maxUnitNameLength = 10
+
+    func addCustomUnit(name: String) -> Bool {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return false }
+        let allUnits = fetchUnits()
+        let customCount = allUnits.filter { $0.origin == .custom }.count
+        guard customCount < Self.maxCustomUnitsCount else { return false }
+        guard !allUnits.contains(where: { $0.name.lowercased() == trimmed.lowercased() }) else { return false }
+        do {
+            try repository.addUnit(Unit(name: trimmed, origin: .custom))
+            return true
+        } catch {
+            lastError = "No se pudo crear la unidad: \(error.localizedDescription)"
+            return false
+        }
+    }
+
+    func countHabitsUsingUnit(_ unit: Unit) -> Int {
+        do {
+            return try repository.countHabitsUsingUnit(unit)
+        } catch {
+            lastError = "No se pudo verificar el uso de la unidad: \(error.localizedDescription)"
+            return 0
+        }
+    }
+
+    func deleteUnit(_ unit: Unit) {
+        do {
+            try repository.deleteUnit(unit)
+        } catch {
+            lastError = "No se pudo eliminar la unidad: \(error.localizedDescription)"
+        }
+    }
+
+    func renameUnit(_ unit: Unit, to newName: String) -> Bool {
+        let trimmed = newName.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return false }
+        let allUnits = fetchUnits()
+        guard !allUnits.contains(where: { $0.name.lowercased() == trimmed.lowercased() && $0 !== unit })
+        else { return false }
+        unit.name = trimmed
+        do {
+            try repository.saveChanges()
+            return true
+        } catch {
+            lastError = "No se pudo renombrar la unidad: \(error.localizedDescription)"
+            return false
+        }
+    }
+
     // MARK: - Validación
 
     static let maxNameLength = 40

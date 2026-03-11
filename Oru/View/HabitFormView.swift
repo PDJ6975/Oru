@@ -32,6 +32,7 @@ struct HabitFormView: View {
     @State private var confirmTap = false
     @State private var isSaving = false
     @State private var units: [Unit] = []
+    @State private var showUnitManagement = false
 
     private var isEditing: Bool { habitToEdit != nil }
 
@@ -153,36 +154,7 @@ struct HabitFormView: View {
     // MARK: - Días
 
     private var daysSection: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("¿Qué días quieres realizarlo?")
-                .oruLabel()
-
-            HStack(spacing: 8) {
-                ForEach(Habit.Weekday.allCases, id: \.self) { day in
-                    dayPill(day)
-                }
-            }
-            .frame(maxWidth: .infinity)
-        }
-    }
-
-    private func dayPill(_ day: Habit.Weekday) -> some View {
-        let isSelected = selectedDays.contains(day)
-        return Button {
-            if isSelected {
-                selectedDays.remove(day)
-            } else {
-                selectedDays.insert(day)
-            }
-        } label: {
-            Text(day.shortName)
-                .oruPillCircle()
-                .foregroundStyle(isSelected ? .white : .secondary)
-                .frame(width: 42, height: 42)
-                .background(isSelected ? Color.oruPrimary : .clear, in: .circle)
-        }
-        .glassEffect(.regular, in: .circle)
-        .sensoryFeedback(.selection, trigger: isSelected)
+        DaysSectionView(selectedDays: $selectedDays)
     }
 
     // MARK: - Tipo de hábito
@@ -241,6 +213,14 @@ struct HabitFormView: View {
             ForEach(units, id: \.name) { unit in
                 Button(unit.name) { selectedUnit = unit }
             }
+
+            Divider()
+
+            Button {
+                showUnitManagement = true
+            } label: {
+                Label("Gestionar unidades", systemImage: "slider.horizontal.3")
+            }
         } label: {
             HStack(spacing: 2) {
                 Text(selectedUnit?.name ?? "uds")
@@ -250,6 +230,9 @@ struct HabitFormView: View {
                     .font(.system(size: 9))
                     .foregroundStyle(Color.oruPrimary)
             }
+        }
+        .sheet(isPresented: $showUnitManagement, onDismiss: refreshUnits) {
+            UnitManagementView(viewModel: viewModel)
         }
     }
 
@@ -309,6 +292,16 @@ struct HabitFormView: View {
         .padding(.horizontal, 8)
     }
 
+    // MARK: - Refrescar unidades
+
+    private func refreshUnits() {
+        units = viewModel.fetchUnits()
+        if let selected = selectedUnit,
+           !units.contains(where: { $0.id == selected.id }) {
+            selectedUnit = nil
+        }
+    }
+
     // MARK: - Guardar (creación o edición)
 
     private func saveHabit() {
@@ -350,6 +343,46 @@ struct HabitFormView: View {
         } else {
             isSaving = false
         }
+    }
+}
+
+// MARK: - Sección de días
+
+private struct DaysSectionView: View {
+
+    @Binding var selectedDays: Set<Habit.Weekday>
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Text("¿Qué días quieres realizarlo?")
+                .oruLabel()
+
+            HStack(spacing: 8) {
+                ForEach(Habit.Weekday.allCases, id: \.self) { day in
+                    dayPill(day)
+                }
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    private func dayPill(_ day: Habit.Weekday) -> some View {
+        let isSelected = selectedDays.contains(day)
+        return Button {
+            if isSelected {
+                selectedDays.remove(day)
+            } else {
+                selectedDays.insert(day)
+            }
+        } label: {
+            Text(day.shortName)
+                .oruPillCircle()
+                .foregroundStyle(isSelected ? .white : .secondary)
+                .frame(width: 42, height: 42)
+                .background(isSelected ? Color.oruPrimary : .clear, in: .circle)
+        }
+        .glassEffect(.regular, in: .circle)
+        .sensoryFeedback(.selection, trigger: isSelected)
     }
 }
 
