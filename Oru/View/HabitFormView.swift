@@ -78,6 +78,7 @@ struct HabitFormView: View {
         .sensoryFeedback(.selection, trigger: focusedField)
         .task {
             units = viewModel.fetchUnits()
+            let defaultUnit = units.first { $0.name == Unit.defaultName }
             if let habit = habitToEdit {
                 icon = habit.icon
                 name = habit.name
@@ -86,8 +87,10 @@ struct HabitFormView: View {
                 if let goal = habit.dailyGoal {
                     dailyGoal = goal.formatted
                 }
-                selectedUnit = habit.unit
+                selectedUnit = habit.unit ?? defaultUnit
                 note = habit.note ?? ""
+            } else {
+                selectedUnit = defaultUnit
             }
         }
         .alert(
@@ -223,7 +226,7 @@ struct HabitFormView: View {
             }
         } label: {
             HStack(spacing: 2) {
-                Text(selectedUnit?.name ?? "uds")
+                Text(selectedUnit?.name ?? "")
                     .font(.system(size: 13, weight: .medium, design: .rounded))
                     .foregroundStyle(Color.oruPrimary)
                 Image(systemName: "chevron.up.chevron.down")
@@ -298,7 +301,7 @@ struct HabitFormView: View {
         units = viewModel.fetchUnits()
         if let selected = selectedUnit,
            !units.contains(where: { $0.id == selected.id }) {
-            selectedUnit = nil
+            selectedUnit = units.first { $0.name == Unit.defaultName }
         }
     }
 

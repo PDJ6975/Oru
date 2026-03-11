@@ -17,6 +17,7 @@ extension Unit {
         case custom
     }
 
+    static let defaultName = "uds"
     static let maxNameLength = 6
     static let maxCustomCount = 20
 }

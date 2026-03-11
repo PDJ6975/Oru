@@ -29,6 +29,14 @@ struct UnitManagementView: View {
             && !units.contains(where: { $0.name.lowercased() == trimmedNewName.lowercased() })
     }
 
+    private var isRenameValid: Bool {
+        let trimmed = renameName.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return false }
+        let lowered = trimmed.lowercased()
+        guard lowered != unitToRename?.name.lowercased() else { return false }
+        return !units.contains(where: { $0.name.lowercased() == lowered })
+    }
+
     var body: some View {
         NavigationStack {
             List {
@@ -70,6 +78,8 @@ struct UnitManagementView: View {
                     Text("\(customUnits.count)/\(Unit.maxCustomCount) unidades personalizadas")
                 }
             }
+            .scrollDismissesKeyboard(.immediately)
+            .onTapGesture { isAddFieldFocused = false }
             .navigationTitle("Unidades")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -84,7 +94,7 @@ struct UnitManagementView: View {
                     }
                 Button("Cancelar", role: .cancel) { unitToRename = nil }
                 Button("Guardar") { rename() }
-                    .disabled(renameName.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .disabled(!isRenameValid)
             }
             .alert("Unidad en uso", isPresented: $showBlockedAlert) {
                 Button("Entendido", role: .cancel) { }
