@@ -236,21 +236,12 @@ private struct QuantityHabitRow: View {
 
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 8) {
-                        HStack(spacing: 8) {
-                            Text(habit.icon)
-                                .font(.system(size: 16))
+                        Text(habit.icon)
+                            .font(.system(size: 16))
 
-                            Text(habit.name)
-                                .oruTextPrimary()
-                                .lineLimit(1)
-                                .truncationMode(.tail)
-                        }
-                        .layoutPriority(1)
-
-                        if let goal = habit.dailyGoal {
-                            goalBadge(goal: goal)
-                                .fixedSize()
-                        }
+                        Text(habit.name)
+                            .oruTextPrimary()
+                            .lineLimit(1)
                     }
 
                     if let note = habit.note, !note.isEmpty {
@@ -262,11 +253,7 @@ private struct QuantityHabitRow: View {
 
                 Spacer()
 
-                Text((todayCompliance?.recordedAmount ?? 0).formatted(unit: habit.unit))
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(hasRecordedAmount
-                        ? Color.oruPrimary.opacity(0.8)
-                        : Color.secondary.opacity(0.35))
+                progressLabel
             }
 
             if isEntering {
@@ -275,6 +262,9 @@ private struct QuantityHabitRow: View {
                         .keyboardType(.decimalPad)
                         .focused($isFocused)
                         .oruTextPrimary()
+                        .onChange(of: inputText) { _, newValue in
+                            inputText = String(newValue.prefix(Habit.maxGoalLength))
+                        }
 
                     if let unit = habit.unit {
                         Text(unit.name)
@@ -303,16 +293,22 @@ private struct QuantityHabitRow: View {
         isFocused = false
     }
 
-    private func goalBadge(goal: Double) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: "info.circle")
-                .font(.system(size: 10))
-            Text(goal.formatted(unit: habit.unit))
+    private var progressLabel: some View {
+        let amount = (todayCompliance?.recordedAmount ?? 0).formatted
+        let text: String
+
+        if let goal = habit.dailyGoal {
+            let suffix = habit.unit.map { " \($0.name)" } ?? ""
+            text = "\(amount) / \(goal.formatted)\(suffix)"
+        } else {
+            text = habit.unit.map { "\(amount) \($0.name)" } ?? amount
         }
-        .font(.system(size: 12, weight: .medium, design: .rounded))
-        .padding(.horizontal, 8)
-        .padding(.vertical, 3)
-        .glassEffect(.regular)
+
+        return Text(text)
+            .font(.system(size: 13, weight: .semibold, design: .rounded))
+            .foregroundStyle(hasRecordedAmount
+                ? Color.oruPrimary.opacity(0.8)
+                : Color.secondary.opacity(0.35))
     }
 }
 

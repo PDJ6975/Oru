@@ -89,15 +89,12 @@ class HabitViewModel {
 
     // MARK: - Gestión de unidades
 
-    static let maxCustomUnitsCount = 20
-    static let maxUnitNameLength = 10
-
     func addCustomUnit(name: String) -> Bool {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return false }
         let allUnits = fetchUnits()
         let customCount = allUnits.filter { $0.origin == .custom }.count
-        guard customCount < Self.maxCustomUnitsCount else { return false }
+        guard customCount < Unit.maxCustomCount else { return false }
         guard !allUnits.contains(where: { $0.name.lowercased() == trimmed.lowercased() }) else { return false }
         do {
             try repository.addUnit(Unit(name: trimmed, origin: .custom))
@@ -143,24 +140,20 @@ class HabitViewModel {
 
     // MARK: - Validación
 
-    static let maxNameLength = 40
-    static let maxGoalLength = 5
-    static let maxNoteLength = 200
-
     func isValidHabit(name: String, selectedDays: Set<Habit.Weekday>) -> Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty && !selectedDays.isEmpty
     }
 
     func clampName(_ value: String) -> String {
-        String(value.prefix(Self.maxNameLength))
+        String(value.prefix(Habit.maxNameLength))
     }
 
     func clampGoal(_ value: String) -> String {
-        String(value.prefix(Self.maxGoalLength))
+        String(value.prefix(Habit.maxGoalLength))
     }
 
     func clampNote(_ value: String) -> String {
-        String(value.prefix(Self.maxNoteLength))
+        String(value.prefix(Habit.maxNoteLength))
     }
 
     // MARK: - Creación y edición de hábitos

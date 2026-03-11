@@ -81,4 +81,8 @@ extension Habit {
         case saturday = 6
         case sunday = 7
     }
+
+    static let maxNameLength = 20
+    static let maxGoalLength = 5
+    static let maxNoteLength = 200
 }

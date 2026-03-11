@@ -16,4 +16,7 @@ extension Unit {
         case base
         case custom
     }
+
+    static let maxNameLength = 6
+    static let maxCustomCount = 20
 }
