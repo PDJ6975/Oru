@@ -10,6 +10,7 @@ struct UnitManagementView: View {
     @State private var unitToRename: Unit?
     @State private var renameName = ""
     @State private var unitToDelete: Unit?
+    @State private var showDeleteDialog = false
     @State private var blockedUnitName = ""
     @State private var blockedHabitCount = 0
     @State private var showBlockedAlert = false
@@ -43,11 +44,12 @@ struct UnitManagementView: View {
                         Text(unit.name)
                             .oruTextPrimary()
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                Button(role: .destructive) {
+                                Button {
                                     requestDelete(unit)
                                 } label: {
                                     Label("Eliminar", systemImage: "trash")
                                 }
+                                .tint(.red)
 
                                 Button {
                                     renameName = unit.name
@@ -91,11 +93,8 @@ struct UnitManagementView: View {
                 let info = "\(blockedHabitCount) \(noun)"
                 Text("«\(blockedUnitName)» está en uso por \(info). Cambia su unidad antes de eliminarla.")
             }
-            .confirmationDialog(
-                "¿Eliminar unidad?",
-                isPresented: showDeleteBinding,
-                titleVisibility: .visible
-            ) {
+            .alert("¿Eliminar unidad?", isPresented: $showDeleteDialog) {
+                Button("Cancelar", role: .cancel) { unitToDelete = nil }
                 Button("Eliminar", role: .destructive) { delete() }
             } message: {
                 Text("Esta acción no se puede deshacer.")
@@ -136,13 +135,6 @@ struct UnitManagementView: View {
         )
     }
 
-    private var showDeleteBinding: Binding<Bool> {
-        Binding(
-            get: { unitToDelete != nil },
-            set: { if !$0 { unitToDelete = nil } }
-        )
-    }
-
     // MARK: - Acciones
 
     private func loadUnits() {
@@ -163,6 +155,7 @@ struct UnitManagementView: View {
             showBlockedAlert = true
         } else {
             unitToDelete = unit
+            showDeleteDialog = true
         }
     }
 

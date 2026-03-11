@@ -305,7 +305,7 @@ private struct QuantityHabitRow: View {
         }
 
         return Text(text)
-            .font(.system(size: 13, weight: .semibold, design: .rounded))
+            .oruPillCircle()
             .foregroundStyle(hasRecordedAmount
                 ? Color.oruPrimary.opacity(0.8)
                 : Color.secondary.opacity(0.35))
