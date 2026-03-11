@@ -40,44 +40,44 @@ struct UnitManagementView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Esenciales") {
-                    ForEach(baseUnits) { unit in
-                        Text(unit.name)
-                            .oruTextPrimary()
+                    Section("Esenciales") {
+                        ForEach(baseUnits) { unit in
+                            Text(unit.name)
+                                .oruTextPrimary()
+                        }
+                    }
+
+                    Section {
+                        ForEach(customUnits) { unit in
+                            Text(unit.name)
+                                .oruTextPrimary()
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button {
+                                        requestDelete(unit)
+                                    } label: {
+                                        Label("Eliminar", systemImage: "trash")
+                                    }
+                                    .tint(.red)
+
+                                    Button {
+                                        renameName = unit.name
+                                        unitToRename = unit
+                                    } label: {
+                                        Label("Renombrar", systemImage: "pencil")
+                                    }
+                                    .tint(.oruPrimary)
+                                }
+                        }
+
+                        if canAddMore {
+                            addUnitRow
+                        }
+                    } header: {
+                        Text("Creadas por ti")
+                    } footer: {
+                        Text("\(customUnits.count)/\(Unit.maxCustomCount) unidades a medida")
                     }
                 }
-
-                Section {
-                    ForEach(customUnits) { unit in
-                        Text(unit.name)
-                            .oruTextPrimary()
-                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                Button {
-                                    requestDelete(unit)
-                                } label: {
-                                    Label("Eliminar", systemImage: "trash")
-                                }
-                                .tint(.red)
-
-                                Button {
-                                    renameName = unit.name
-                                    unitToRename = unit
-                                } label: {
-                                    Label("Renombrar", systemImage: "pencil")
-                                }
-                                .tint(.oruPrimary)
-                            }
-                    }
-
-                    if canAddMore {
-                        addUnitRow
-                    }
-                } header: {
-                    Text("Creadas por ti")
-                } footer: {
-                    Text("\(customUnits.count)/\(Unit.maxCustomCount) unidades a medida")
-                }
-            }
             .scrollDismissesKeyboard(.immediately)
             .onTapGesture { isAddFieldFocused = false }
             .navigationBarTitleDisplayMode(.inline)
@@ -85,9 +85,6 @@ struct UnitManagementView: View {
                 ToolbarItem(placement: .principal) {
                     Text("A tu medida")
                         .oruAccent()
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Listo") { dismiss() }
                 }
             }
             .alert("Renombrar unidad", isPresented: showRenameBinding) {
@@ -113,6 +110,17 @@ struct UnitManagementView: View {
                 Text("Esta acción no se puede deshacer.")
             }
             .task { loadUnits() }
+        }
+        .overlay(alignment: .topTrailing) {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .oruNavigationIconSecondary()
+            }
+            .glassEffect(.regular.interactive(), in: .circle)
+            .padding(.trailing, 16)
+            .padding(.top, 20)
         }
     }
 
