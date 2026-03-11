@@ -40,7 +40,7 @@ struct UnitManagementView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Predefinidas") {
+                Section("Esenciales") {
                     ForEach(baseUnits) { unit in
                         Text(unit.name)
                             .oruTextPrimary()
@@ -73,16 +73,19 @@ struct UnitManagementView: View {
                         addUnitRow
                     }
                 } header: {
-                    Text("Personalizadas")
+                    Text("Creadas por ti")
                 } footer: {
-                    Text("\(customUnits.count)/\(Unit.maxCustomCount) unidades personalizadas")
+                    Text("\(customUnits.count)/\(Unit.maxCustomCount) unidades a medida")
                 }
             }
             .scrollDismissesKeyboard(.immediately)
             .onTapGesture { isAddFieldFocused = false }
-            .navigationTitle("Unidades")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("A tu medida")
+                        .oruAccent()
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Listo") { dismiss() }
                 }

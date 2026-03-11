@@ -222,7 +222,7 @@ struct HabitFormView: View {
             Button {
                 showUnitManagement = true
             } label: {
-                Label("Gestionar unidades", systemImage: "slider.horizontal.3")
+                Label("Añadir nueva medida", systemImage: "plus.circle.dashed")
             }
         } label: {
             HStack(spacing: 2) {
