@@ -90,8 +90,9 @@ class HabitViewModel {
     // Calcula el progreso de consolidación (0.0 a 1.0) basado en días completados / 66
     func consolidationProgress(for habit: Habit) -> Double {
         let completedDays = habit.compliances.filter(\.completed).count
+        if completedDays >= 66 { return 1.0 }
         let steps = completedDays / 5 * 5
-        return min(Double(steps) / 66.0, 1.0)
+        return Double(steps) / 66.0
     }
 
     // Convierte el día de la semana del calendario internacional a nuestro modelo

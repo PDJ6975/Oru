@@ -149,16 +149,26 @@ private struct ConsolidationProgressModifier: ViewModifier {
         content
             .background(alignment: .leading) {
                 GeometryReader { geo in
-                    let availableWidth = geo.size.width - leadingInset - 4
                     let clampedProgress = min(max(progress, 0), 1)
+                    let trailingMargin: CGFloat = 8
+                    let availableWidth = geo.size.width - leadingInset - trailingMargin
 
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.oruPrimary.opacity(0.06))
+                        .fill(
+                            LinearGradient(
+                                colors: clampedProgress >= 1
+                                    ? [Color.oruPrimary.opacity(0.15)]
+                                    : [Color.oruPrimary.opacity(0.15), .clear],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
                         .frame(width: availableWidth * clampedProgress)
+                        .padding(.vertical, -4)
                         .padding(.leading, leadingInset)
                 }
             }
-            .animation(.easeOut(duration: 0.3), value: progress)
+            .transaction { $0.animation = nil }
     }
 }
 
