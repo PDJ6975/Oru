@@ -43,7 +43,12 @@ struct HabitFormView: View {
     }
 
     private var isValid: Bool {
-        viewModel.isValidHabit(name: name, selectedDays: selectedDays)
+        let base = viewModel.isValidHabit(name: name, selectedDays: selectedDays)
+        if habitType == .quantity {
+            let normalized = dailyGoal.replacingOccurrences(of: ",", with: ".")
+            return base && (Double(normalized) ?? 0) > 0
+        }
+        return base
     }
 
     // MARK: - Body
@@ -178,6 +183,8 @@ struct HabitFormView: View {
                 if newValue == .boolean {
                     dailyGoal = ""
                     selectedUnit = nil
+                } else {
+                    selectedUnit = units.first { $0.name == Unit.defaultName }
                 }
             }
         }

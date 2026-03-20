@@ -60,9 +60,10 @@ class HabitViewModel {
                 }
             } else if let compliance = todayCompliance(for: habit) {
                 compliance.recordedAmount = amount
-                compliance.completed = true
+                compliance.completed = isGoalMet(amount, for: habit)
             } else {
-                let compliance = Compliance(date: .now, completed: true, recordedAmount: amount)
+                let completed = isGoalMet(amount, for: habit)
+                let compliance = Compliance(date: .now, completed: completed, recordedAmount: amount)
                 compliance.habit = habit
             }
             try repository.saveChanges()
@@ -71,6 +72,15 @@ class HabitViewModel {
         }
     }
     
+    // Evalúa si la cantidad registrada alcanza el objetivo diario
+    // Sin objetivo definido, cualquier cantidad > 0 se considera completado
+    func isGoalMet(_ amount: Double, for habit: Habit) -> Bool {
+        if let goal = habit.dailyGoal {
+            return amount >= goal
+        }
+        return amount > 0
+    }
+
     // Devuelve si existe un registro de cumplimiento para un hábito en el día actual
     func todayCompliance(for habit: Habit) -> Compliance? {
         // isDateInToday ignora las horas de la fecha para asegurar un solo registro

@@ -209,6 +209,10 @@ private struct QuantityHabitRow: View {
         todayCompliance?.recordedAmount != nil && todayCompliance?.recordedAmount != 0
     }
 
+    private var isCompleted: Bool {
+        todayCompliance?.completed ?? false
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
@@ -242,6 +246,8 @@ private struct QuantityHabitRow: View {
                         Text(habit.name)
                             .oruTextPrimary()
                             .lineLimit(1)
+                            .strikethrough(isCompleted)
+                            .foregroundStyle(isCompleted ? .secondary : .primary)
                     }
 
                     if let note = habit.note, !note.isEmpty {
