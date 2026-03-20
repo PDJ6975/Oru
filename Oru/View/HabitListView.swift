@@ -6,6 +6,7 @@ struct HabitListView: View {
     var viewModel: HabitViewModel
     @State private var showCreateForm = false
     @State private var habitToEdit: Habit?
+    @State private var habitToDelete: Habit?
 
     private func todayFormatted() -> String {
         let formatter = DateFormatter()
@@ -48,6 +49,22 @@ struct HabitListView: View {
         .sheet(item: $habitToEdit) { habit in
             HabitFormView(viewModel: viewModel, habitToEdit: habit)
         }
+        .alert(
+            "Eliminar hábito",
+            isPresented: Binding(
+                get: { habitToDelete != nil },
+                set: { if !$0 { habitToDelete = nil } }
+            )
+        ) {
+            Button("Eliminar", role: .destructive) {
+                if let habit = habitToDelete {
+                    viewModel.deleteHabit(habit)
+                }
+            }
+            Button("Cancelar", role: .cancel) { }
+        } message: {
+            Text("Se eliminará el hábito y todo su historial. Esta acción no se puede deshacer.")
+        }
         .onAppear {
             viewModel.loadHabits()
         }
@@ -74,7 +91,13 @@ struct HabitListView: View {
                 } else {
                     ForEach(viewModel.todayHabits) { habit in
                         TodayHabitRow(habit: habit, viewModel: viewModel)
-                            .swipeActions(edge: .trailing) {
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button {
+                                    habitToDelete = habit
+                                } label: {
+                                    Label("Eliminar", systemImage: "trash")
+                                }
+                                .tint(.red)
                                 Button {
                                     habitToEdit = habit
                                 } label: {
@@ -90,7 +113,13 @@ struct HabitListView: View {
                 Section("En pausa") {
                     ForEach(viewModel.otherHabits) { habit in
                         HabitRow(habit: habit, today: viewModel.currentWeekday())
-                            .swipeActions(edge: .trailing) {
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button {
+                                    habitToDelete = habit
+                                } label: {
+                                    Label("Eliminar", systemImage: "trash")
+                                }
+                                .tint(.red)
                                 Button {
                                     habitToEdit = habit
                                 } label: {
@@ -184,6 +213,7 @@ private struct BooleanHabitRow: View {
             }
         }
         .padding(.vertical, 4)
+        .oruConsolidationProgress(viewModel.consolidationProgress(for: habit))
     }
 }
 
@@ -207,6 +237,10 @@ private struct QuantityHabitRow: View {
 
     private var hasRecordedAmount: Bool {
         todayCompliance?.recordedAmount != nil && todayCompliance?.recordedAmount != 0
+    }
+
+    private var isCompleted: Bool {
+        todayCompliance?.completed ?? false
     }
 
     var body: some View {
@@ -242,6 +276,8 @@ private struct QuantityHabitRow: View {
                         Text(habit.name)
                             .oruTextPrimary()
                             .lineLimit(1)
+                            .strikethrough(isCompleted)
+                            .foregroundStyle(isCompleted ? .secondary : .primary)
                     }
 
                     if let note = habit.note, !note.isEmpty {
@@ -279,6 +315,7 @@ private struct QuantityHabitRow: View {
             }
         }
         .padding(.vertical, 4)
+        .oruConsolidationProgress(viewModel.consolidationProgress(for: habit))
         .animation(.easeOut(duration: 0.2), value: isEntering)
         .onChange(of: isFocused) { _, focused in
             if !focused && isEntering { isEntering = false }
@@ -408,20 +445,29 @@ private struct HabitListPreview: View {
         )
         correr.unit = km
 
-        let leer = Habit(
-            icon: "📖",
-            name: "Leer",
-            type: .boolean,
-            scheduledDays: [.sunday]
-        )
-
         context.insert(meditar)
         context.insert(correr)
-        context.insert(leer)
 
-        let complianceCorrer = Compliance(date: .now, completed: false, recordedAmount: nil)
-        complianceCorrer.habit = correr
-        context.insert(complianceCorrer)
+        // Simular 30 días completados para meditar (~45% consolidación, salto a 30/66)
+        for dayOffset in 1...30 {
+            let compliance = Compliance(
+                date: Calendar.current.date(byAdding: .day, value: -dayOffset, to: .now) ?? .now,
+                completed: true
+            )
+            compliance.habit = meditar
+            context.insert(compliance)
+        }
+
+        // Simular 10 días completados para correr (~15% consolidación, salto a 10/66)
+        for dayOffset in 1...59 {
+            let compliance = Compliance(
+                date: Calendar.current.date(byAdding: .day, value: -dayOffset, to: .now) ?? .now,
+                completed: true,
+                recordedAmount: 5
+            )
+            compliance.habit = correr
+            context.insert(compliance)
+        }
 
         let repository = HabitRepository(modelContext: context)
         _viewModel = State(initialValue: HabitViewModel(repository: repository))

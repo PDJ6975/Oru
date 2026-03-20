@@ -60,9 +60,10 @@ class HabitViewModel {
                 }
             } else if let compliance = todayCompliance(for: habit) {
                 compliance.recordedAmount = amount
-                compliance.completed = true
+                compliance.completed = isGoalMet(amount, for: habit)
             } else {
-                let compliance = Compliance(date: .now, completed: true, recordedAmount: amount)
+                let completed = isGoalMet(amount, for: habit)
+                let compliance = Compliance(date: .now, completed: completed, recordedAmount: amount)
                 compliance.habit = habit
             }
             try repository.saveChanges()
@@ -71,12 +72,28 @@ class HabitViewModel {
         }
     }
     
+    // Evalúa si la cantidad registrada alcanza el objetivo diario
+    // Sin objetivo definido, cualquier cantidad > 0 se considera completado
+    func isGoalMet(_ amount: Double, for habit: Habit) -> Bool {
+        if let goal = habit.dailyGoal {
+            return amount >= goal
+        }
+        return amount > 0
+    }
+
     // Devuelve si existe un registro de cumplimiento para un hábito en el día actual
     func todayCompliance(for habit: Habit) -> Compliance? {
         // isDateInToday ignora las horas de la fecha para asegurar un solo registro
         habit.compliances.first { Calendar.current.isDateInToday($0.date) }
     }
     
+    // Calcula el progreso de consolidación (0.0 a 1.0) basado en días completados / 66
+    func consolidationProgress(for habit: Habit) -> Double {
+        let completedDays = habit.compliances.filter(\.completed).count
+        let steps = completedDays / 5 * 5
+        return min(Double(steps) / 66.0, 1.0)
+    }
+
     // Convierte el día de la semana del calendario internacional a nuestro modelo
     // Si es domingo: 1 -> 7; Si es otro día: n - 1
     // Calendar.component(.weekday): 1=domingo, 2=lunes...7=sábado
@@ -164,6 +181,15 @@ class HabitViewModel {
             loadHabits()
         } catch {
             lastError = "No se pudo crear el hábito: \(error.localizedDescription)"
+        }
+    }
+
+    func deleteHabit(_ habit: Habit) {
+        do {
+            try repository.deleteHabit(habit)
+            loadHabits()
+        } catch {
+            lastError = "No se pudo eliminar el hábito: \(error.localizedDescription)"
         }
     }
 

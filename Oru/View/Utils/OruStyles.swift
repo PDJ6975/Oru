@@ -139,6 +139,24 @@ private struct OruNavigationIconSecondaryModifier: ViewModifier {
     }
 }
 
+// MARK: - Consolidation Progress
+
+private struct ConsolidationProgressModifier: ViewModifier {
+    let progress: Double
+
+    func body(content: Content) -> some View {
+        content
+            .background(alignment: .leading) {
+                GeometryReader { geo in
+                    Rectangle()
+                        .fill(Color.oruPrimary.opacity(0.06))
+                        .frame(width: geo.size.width * min(max(progress, 0), 1))
+                }
+            }
+            .animation(.easeOut(duration: 0.3), value: progress)
+    }
+}
+
 // MARK: - Pulse Animation
 
 private struct OruPulseModifier: ViewModifier {
@@ -223,5 +241,9 @@ extension View {
 
     func oruPulse(scale: CGFloat = 1.25, action: @escaping () -> Void) -> some View {
         modifier(OruPulseModifier(scale: scale, action: action))
+    }
+
+    func oruConsolidationProgress(_ progress: Double) -> some View {
+        modifier(ConsolidationProgressModifier(progress: progress))
     }
 }
