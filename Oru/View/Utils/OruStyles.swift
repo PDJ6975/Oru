@@ -143,14 +143,19 @@ private struct OruNavigationIconSecondaryModifier: ViewModifier {
 
 private struct ConsolidationProgressModifier: ViewModifier {
     let progress: Double
+    let leadingInset: CGFloat
 
     func body(content: Content) -> some View {
         content
             .background(alignment: .leading) {
                 GeometryReader { geo in
-                    Rectangle()
+                    let availableWidth = geo.size.width - leadingInset - 4
+                    let clampedProgress = min(max(progress, 0), 1)
+
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
                         .fill(Color.oruPrimary.opacity(0.06))
-                        .frame(width: geo.size.width * min(max(progress, 0), 1))
+                        .frame(width: availableWidth * clampedProgress)
+                        .padding(.leading, leadingInset)
                 }
             }
             .animation(.easeOut(duration: 0.3), value: progress)
@@ -243,7 +248,7 @@ extension View {
         modifier(OruPulseModifier(scale: scale, action: action))
     }
 
-    func oruConsolidationProgress(_ progress: Double) -> some View {
-        modifier(ConsolidationProgressModifier(progress: progress))
+    func oruConsolidationProgress(_ progress: Double, leadingInset: CGFloat = 0) -> some View {
+        modifier(ConsolidationProgressModifier(progress: progress, leadingInset: leadingInset))
     }
 }

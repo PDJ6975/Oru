@@ -213,7 +213,7 @@ private struct BooleanHabitRow: View {
             }
         }
         .padding(.vertical, 4)
-        .oruConsolidationProgress(viewModel.consolidationProgress(for: habit))
+        .oruConsolidationProgress(viewModel.consolidationProgress(for: habit), leadingInset: 32)
     }
 }
 
@@ -315,7 +315,7 @@ private struct QuantityHabitRow: View {
             }
         }
         .padding(.vertical, 4)
-        .oruConsolidationProgress(viewModel.consolidationProgress(for: habit))
+        .oruConsolidationProgress(viewModel.consolidationProgress(for: habit), leadingInset: 32)
         .animation(.easeOut(duration: 0.2), value: isEntering)
         .onChange(of: isFocused) { _, focused in
             if !focused && isEntering { isEntering = false }
@@ -459,7 +459,7 @@ private struct HabitListPreview: View {
         }
 
         // Simular 10 días completados para correr (~15% consolidación, salto a 10/66)
-        for dayOffset in 1...59 {
+        for dayOffset in 1...64 {
             let compliance = Compliance(
                 date: Calendar.current.date(byAdding: .day, value: -dayOffset, to: .now) ?? .now,
                 completed: true,
