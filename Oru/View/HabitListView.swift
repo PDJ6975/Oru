@@ -4,9 +4,11 @@ import SwiftData
 struct HabitListView: View {
 
     var viewModel: HabitViewModel
+    @Environment(\.modelContext) private var modelContext
     @State private var showCreateForm = false
     @State private var habitToEdit: Habit?
     @State private var habitToDelete: Habit?
+    @State private var showStats = false
 
     private func todayFormatted() -> String {
         let formatter = DateFormatter()
@@ -38,9 +40,21 @@ struct HabitListView: View {
                     Button("Nuevo hábito", systemImage: "plus") {
                         showCreateForm = true
                     }
+                    Button("Estadísticas", systemImage: "chart.bar") {
+                        showStats = true
+                    }
                 } label: {
                     Image(systemName: "ellipsis")
                 }
+            }
+        }
+        .sheet(isPresented: $showStats) {
+            NavigationStack {
+                StatsView(
+                    viewModel: StatsViewModel(
+                        repository: HabitRepository(modelContext: modelContext)
+                    )
+                )
             }
         }
         .sheet(isPresented: $showCreateForm) {

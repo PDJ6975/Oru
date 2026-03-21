@@ -116,6 +116,37 @@ private struct OruTipModifier: ViewModifier {
     }
 }
 
+// MARK: - Metric Value
+
+private struct OruMetricValueModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 18, weight: .semibold, design: .rounded))
+            .foregroundStyle(.secondary)
+    }
+}
+
+// MARK: - Metric Label
+
+private struct OruMetricLabelModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 15, weight: .medium, design: .rounded))
+            .foregroundStyle(Color.oruPrimary)
+    }
+}
+
+// MARK: - Section Title
+
+private struct OruSectionTitleModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 19, weight: .regular, design: .rounded))
+            .tracking(0.8)
+            .foregroundStyle(.secondary)
+    }
+}
+
 // MARK: - Accent
 
 private struct OruAccentModifier: ViewModifier {
@@ -125,6 +156,18 @@ private struct OruAccentModifier: ViewModifier {
             .italic()
             .tracking(0.8)
             .foregroundStyle(.secondary)
+    }
+}
+
+// MARK: - Accent Primary (mismo estilo que Accent pero con color cyan)
+
+private struct OruAccentPrimaryModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 18, weight: .medium, design: .serif))
+            .italic()
+            .tracking(0.8)
+            .foregroundStyle(Color.oruPrimary)
     }
 }
 
@@ -235,8 +278,24 @@ extension View {
         modifier(OruTipModifier())
     }
 
+    func oruMetricValue() -> some View {
+        modifier(OruMetricValueModifier())
+    }
+
+    func oruMetricLabel() -> some View {
+        modifier(OruMetricLabelModifier())
+    }
+
+    func oruSectionTitle() -> some View {
+        modifier(OruSectionTitleModifier())
+    }
+
     func oruAccent() -> some View {
         modifier(OruAccentModifier())
+    }
+
+    func oruAccentPrimary() -> some View {
+        modifier(OruAccentPrimaryModifier())
     }
 
     func oruNavigationIconSecondary() -> some View {
