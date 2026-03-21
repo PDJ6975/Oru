@@ -3,7 +3,6 @@ import SwiftUI
 struct UnitManagementView: View {
 
     var viewModel: HabitViewModel
-    @Environment(\.dismiss) private var dismiss
 
     @State private var units: [Unit] = []
     @State private var newUnitName = ""
@@ -111,17 +110,7 @@ struct UnitManagementView: View {
             }
             .task { loadUnits() }
         }
-        .overlay(alignment: .topTrailing) {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "xmark")
-                    .oruNavigationIconSecondary()
-            }
-            .glassEffect(.regular.interactive(), in: .circle)
-            .padding(.trailing, 16)
-            .padding(.top, 20)
-        }
+        .presentationDragIndicator(.visible)
     }
 
     // MARK: - Fila de nueva unidad

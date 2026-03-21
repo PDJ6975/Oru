@@ -56,12 +56,15 @@ struct HabitListView: View {
                     )
                 )
             }
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showCreateForm) {
             HabitFormView(viewModel: viewModel)
+                .presentationDragIndicator(.visible)
         }
         .sheet(item: $habitToEdit) { habit in
             HabitFormView(viewModel: viewModel, habitToEdit: habit)
+                .presentationDragIndicator(.visible)
         }
         .alert(
             "Eliminar hábito",

@@ -58,10 +58,8 @@ struct HabitFormView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 30) {
-                VStack(spacing: 1) {
-                    header
-                    iconAndNameSection
-                }
+                iconAndNameSection
+                    .padding(.top, 16)
                 daysSection
                 typeSection
                 if habitType == .quantity {
@@ -110,21 +108,6 @@ struct HabitFormView: View {
             Button("Aceptar", role: .cancel) { }
         } message: {
             Text(viewModel.lastError ?? "")
-        }
-    }
-
-    // MARK: - Header con botón cerrar
-
-    private var header: some View {
-        HStack {
-            Spacer()
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "xmark")
-                    .oruNavigationIconSecondary()
-            }
-            .glassEffect(.regular.interactive(), in: .circle)
         }
     }
 
