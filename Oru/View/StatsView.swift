@@ -4,11 +4,14 @@ import SwiftData
 struct StatsView: View {
 
     var viewModel: StatsViewModel
+    @State private var showAllHabits = false
 
     private let gridColumns = [
         GridItem(.flexible(), spacing: 12),
         GridItem(.flexible(), spacing: 12)
     ]
+
+    private let topCount = 3
 
     var body: some View {
         ScrollView {
@@ -33,6 +36,11 @@ struct StatsView: View {
                     }
 
                     Divider()
+                }
+
+                // MARK: - Mis Hábitos
+                if !viewModel.habitStats.isEmpty {
+                    habitsSection
                 }
             }
             .padding(.horizontal)
@@ -97,6 +105,93 @@ struct StatsView: View {
         viewModel.selectedYear += delta
     }
 
+    private var visibleHabits: [StatsViewModel.HabitStats] {
+        showAllHabits ? viewModel.habitStats : Array(viewModel.habitStats.prefix(topCount))
+    }
+
+    private var hasMoreHabits: Bool {
+        viewModel.habitStats.count > topCount
+    }
+
+    private var habitsSection: some View {
+        VStack(spacing: 14) {
+            Text("Mis Hábitos")
+                .oruSectionTitle()
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            ForEach(visibleHabits) { stat in
+                habitRow(stat)
+            }
+
+            if hasMoreHabits {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        showAllHabits.toggle()
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(showAllHabits ? "Ver menos" : "Ver todos")
+                        Image(systemName: showAllHabits ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                    .oruButton()
+                    .foregroundStyle(Color.oruPrimary)
+                }
+                .padding(.top, 4)
+            }
+        }
+    }
+
+    private func habitRow(_ stat: StatsViewModel.HabitStats) -> some View {
+        HStack(spacing: 12) {
+            Text(stat.habit.icon)
+                .font(.system(size: 24))
+                .frame(width: 36)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(stat.habit.name)
+                    .oruTextPrimary()
+                    .lineLimit(1)
+
+                HStack(spacing: 14) {
+                    habitMetric(icon: "flame", value: "\(stat.currentStreak)")
+                    habitMetric(icon: "trophy", value: "\(stat.bestStreak)")
+                    habitMetric(icon: "checkmark.seal", value: "\(stat.totalCompleted)")
+
+                    if let total = stat.totalAccumulated {
+                        habitMetric(
+                            icon: "sum",
+                            value: total.formatted(unit: stat.habit.unit)
+                        )
+                    }
+
+                    if let avg = stat.dailyAverage {
+                        habitMetric(
+                            icon: "chart.line.uptrend.xyaxis",
+                            value: avg.formatted(unit: stat.habit.unit)
+                        )
+                    }
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .glassEffect(.regular, in: .rect(cornerRadius: 14))
+    }
+
+    private func habitMetric(icon: String, value: String) -> some View {
+        HStack(spacing: 3) {
+            Image(systemName: icon)
+                .font(.system(size: 10))
+                .foregroundStyle(Color.oruPrimary)
+            Text(value)
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundStyle(.secondary)
+        }
+    }
+
     private func metricCard(icon: String, label: String, value: String) -> some View {
         VStack(spacing: 8) {
             Image(systemName: icon)
@@ -133,37 +228,10 @@ private struct StatsPreview: View {
         self.container = container
 
         let context = container.mainContext
-
-        let meditar = Habit(
-            icon: "🧘🏼",
-            name: "Meditar",
-            type: .boolean,
-            scheduledDays: [.monday, .tuesday, .wednesday, .thursday, .friday],
-            creationDate: Calendar.current.date(from: DateComponents(year: 2025, month: 6)) ?? .now
-        )
-        context.insert(meditar)
-
-        // Compliances del año actual
-        for dayOffset in 1...30 {
-            let compliance = Compliance(
-                date: Calendar.current.date(byAdding: .day, value: -dayOffset, to: .now) ?? .now,
-                completed: true
-            )
-            compliance.habit = meditar
-            context.insert(compliance)
-        }
-
-        // Compliances del año anterior para que aparezcan las flechas
-        for dayOffset in 0..<20 {
-            let date = Calendar.current.date(
-                from: DateComponents(year: 2025, month: 9, day: 1)
-            ).flatMap {
-                Calendar.current.date(byAdding: .day, value: dayOffset, to: $0)
-            } ?? .now
-            let compliance = Compliance(date: date, completed: dayOffset % 3 != 0)
-            compliance.habit = meditar
-            context.insert(compliance)
-        }
+        let (habits, units) = Self.sampleData()
+        units.forEach { context.insert($0) }
+        habits.forEach { context.insert($0) }
+        Self.insertCompliances(habits: habits, into: context)
 
         let repository = HabitRepository(modelContext: context)
         _viewModel = State(initialValue: StatsViewModel(repository: repository))
@@ -174,6 +242,82 @@ private struct StatsPreview: View {
             StatsView(viewModel: viewModel)
         }
         .modelContainer(container)
+    }
+
+    private static func sampleData() -> (habits: [Habit], units: [Unit]) {
+        let cal = Calendar.current
+        let km = Unit(name: "km")
+        let paginas = Unit(name: "páginas")
+
+        let meditar = Habit(
+            icon: "🧘🏼", name: "Meditar", type: .boolean,
+            scheduledDays: [.monday, .tuesday, .wednesday, .thursday, .friday],
+            creationDate: cal.date(from: DateComponents(year: 2025, month: 6)) ?? .now
+        )
+        let correr = Habit(
+            icon: "🏃🏼", name: "Correr", type: .quantity,
+            scheduledDays: [.monday, .wednesday, .friday], dailyGoal: 5,
+            creationDate: cal.date(from: DateComponents(year: 2025, month: 9)) ?? .now
+        )
+        correr.unit = km
+        let leer = Habit(
+            icon: "📖", name: "Leer", type: .quantity,
+            scheduledDays: Habit.Weekday.allCases, dailyGoal: 20,
+            creationDate: cal.date(from: DateComponents(year: 2026, month: 1)) ?? .now
+        )
+        leer.unit = paginas
+        let estirar = Habit(
+            icon: "🤸🏼", name: "Estirar", type: .boolean,
+            scheduledDays: [.tuesday, .thursday, .saturday],
+            creationDate: cal.date(from: DateComponents(year: 2026, month: 2)) ?? .now
+        )
+        return ([meditar, correr, leer, estirar], [km, paginas])
+    }
+
+    private static func insertCompliances(habits: [Habit], into context: ModelContext) {
+        let cal = Calendar.current
+        let meditar = habits[0]
+        let correr = habits[1]
+        let leer = habits[2]
+        let estirar = habits[3]
+
+        // Meditar - año actual (30 días) + año anterior (flechas)
+        for off in 1...30 {
+            let cmp = Compliance(
+                date: cal.date(byAdding: .day, value: -off, to: .now) ?? .now, completed: true
+            )
+            cmp.habit = meditar; context.insert(cmp)
+        }
+        for off in 0..<20 {
+            let date = cal.date(from: DateComponents(year: 2025, month: 9, day: 1))
+                .flatMap { cal.date(byAdding: .day, value: off, to: $0) } ?? .now
+            let cmp = Compliance(date: date, completed: off % 3 != 0)
+            cmp.habit = meditar; context.insert(cmp)
+        }
+        // Correr - 15 días con cantidades
+        for off in 1...15 {
+            let cmp = Compliance(
+                date: cal.date(byAdding: .day, value: -off, to: .now) ?? .now,
+                completed: true, recordedAmount: Double.random(in: 3...8)
+            )
+            cmp.habit = correr; context.insert(cmp)
+        }
+        // Leer - 20 días
+        for off in 1...20 {
+            let cmp = Compliance(
+                date: cal.date(byAdding: .day, value: -off, to: .now) ?? .now,
+                completed: off % 4 != 0, recordedAmount: Double(Int.random(in: 10...35))
+            )
+            cmp.habit = leer; context.insert(cmp)
+        }
+        // Estirar - 10 días
+        for off in 1...10 {
+            let cmp = Compliance(
+                date: cal.date(byAdding: .day, value: -off, to: .now) ?? .now,
+                completed: off % 2 == 0
+            )
+            cmp.habit = estirar; context.insert(cmp)
+        }
     }
 }
 
