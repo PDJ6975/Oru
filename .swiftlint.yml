@@ -23,7 +23,7 @@ opt_in_rules:
   - vertical_whitespace_closing_braces
 
 line_length:
-  warning: 120
+  warning: 180
   error: 200
 
 type_body_length:

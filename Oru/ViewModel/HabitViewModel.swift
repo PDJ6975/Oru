@@ -111,14 +111,8 @@ class HabitViewModel {
         }
     }
 
-    // Convierte el día de la semana del calendario internacional a nuestro modelo
-    // Si es domingo: 1 -> 7; Si es otro día: n - 1
-    // Calendar.component(.weekday): 1=domingo, 2=lunes...7=sábado
-    // Habit.Weekday: 1=lunes...7=domingo
     func currentWeekday() -> Habit.Weekday {
-        let calendarWeekday = Calendar.current.component(.weekday, from: .now)
-        let mapped = calendarWeekday == 1 ? 7 : calendarWeekday - 1
-        return Habit.Weekday(rawValue: mapped) ?? .monday
+        weekday(from: .now)
     }
 
     // MARK: - Gestión de unidades

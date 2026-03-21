@@ -1,5 +1,13 @@
 import Foundation
 
+// Convierte el weekday del Calendar de Apple al modelo Habit.Weekday
+// Calendar: 1=domingo, 2=lunes...7=sábado → Habit.Weekday: 1=lunes...7=domingo
+func weekday(from date: Date) -> Habit.Weekday {
+    let wd = Calendar.current.component(.weekday, from: date)
+    let mapped = wd == 1 ? 7 : wd - 1
+    return Habit.Weekday(rawValue: mapped) ?? .monday
+}
+
 extension Double {
 
     // Formatea sin decimales si es entero, con un decimal si no.
