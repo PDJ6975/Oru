@@ -43,12 +43,14 @@ struct HabitFormView: View {
     }
 
     private var isValid: Bool {
-        let base = viewModel.isValidHabit(name: name, selectedDays: selectedDays)
-        if habitType == .quantity {
-            let normalized = dailyGoal.replacingOccurrences(of: ",", with: ".")
-            return base && (Double(normalized) ?? 0) > 0
-        }
-        return base
+        let normalized = dailyGoal.replacingOccurrences(of: ",", with: ".")
+        let goal = Double(normalized)
+        return viewModel.isValidHabit(
+            name: name,
+            selectedDays: selectedDays,
+            type: habitType,
+            dailyGoal: goal
+        )
     }
 
     // MARK: - Body

@@ -41,7 +41,7 @@ class HabitViewModel {
             compliance.completed.toggle()
         } else {
             let compliance = Compliance(date: .now, completed: true)
-            compliance.habit = habit
+            habit.compliances.append(compliance)
         }
         do {
             try repository.saveChanges()
@@ -66,7 +66,7 @@ class HabitViewModel {
             } else {
                 let completed = isGoalMet(amount, for: habit)
                 let compliance = Compliance(date: .now, completed: completed, recordedAmount: amount)
-                compliance.habit = habit
+                habit.compliances.append(compliance)
             }
             try repository.saveChanges()
             checkConsolidation(for: habit)
@@ -174,8 +174,16 @@ class HabitViewModel {
 
     // MARK: - Validación
 
-    func isValidHabit(name: String, selectedDays: Set<Habit.Weekday>) -> Bool {
-        !name.trimmingCharacters(in: .whitespaces).isEmpty && !selectedDays.isEmpty
+    func isValidHabit(
+        name: String,
+        selectedDays: Set<Habit.Weekday>,
+        type: Habit.HabitType,
+        dailyGoal: Double?
+    ) -> Bool {
+        let hasName = !name.trimmingCharacters(in: .whitespaces).isEmpty
+        let hasDays = !selectedDays.isEmpty
+        let hasGoalIfNeeded = type == .boolean || (dailyGoal ?? 0) > 0
+        return hasName && hasDays && hasGoalIfNeeded
     }
 
     func clampName(_ value: String) -> String {
