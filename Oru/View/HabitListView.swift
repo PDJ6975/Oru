@@ -6,6 +6,7 @@ struct HabitListView: View {
     var viewModel: HabitViewModel
     @State private var showCreateForm = false
     @State private var habitToEdit: Habit?
+    @State private var habitToDelete: Habit?
 
     private func todayFormatted() -> String {
         let formatter = DateFormatter()
@@ -48,6 +49,41 @@ struct HabitListView: View {
         .sheet(item: $habitToEdit) { habit in
             HabitFormView(viewModel: viewModel, habitToEdit: habit)
         }
+        .alert(
+            "Eliminar hábito",
+            isPresented: Binding(
+                get: { habitToDelete != nil },
+                set: { if !$0 { habitToDelete = nil } }
+            )
+        ) {
+            Button("Eliminar", role: .destructive) {
+                if let habit = habitToDelete {
+                    viewModel.deleteHabit(habit)
+                }
+            }
+            Button("Cancelar", role: .cancel) { }
+        } message: {
+            Text("Se eliminará el hábito y todo su historial. Esta acción no se puede deshacer.")
+        }
+        .alert(
+            "¡Hábito consolidado! 🎉",
+            isPresented: Binding(
+                get: { viewModel.consolidatedHabit != nil },
+                set: { if !$0 { viewModel.consolidatedHabit = nil } }
+            )
+        ) {
+            Button("Aceptar") {
+                viewModel.consolidatedHabit = nil
+            }
+        } message: {
+            if let habit = viewModel.consolidatedHabit {
+                let intro = "¡Enhorabuena! \(habit.name) ya es parte de ti."
+                let detail = "Puedes mantenerlo en tu día a día o, cuando sientas"
+                    + " que ya no necesitas registrarlo,"
+                    + " deslízalo para archivarlo en tus estadísticas."
+                Text("\(intro) \(detail)")
+            }
+        }
         .onAppear {
             viewModel.loadHabits()
         }
@@ -74,13 +110,28 @@ struct HabitListView: View {
                 } else {
                     ForEach(viewModel.todayHabits) { habit in
                         TodayHabitRow(habit: habit, viewModel: viewModel)
-                            .swipeActions(edge: .trailing) {
+                            .oruConsolidationCard(progress: viewModel.consolidationProgress(for: habit))
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button {
+                                    habitToDelete = habit
+                                } label: {
+                                    Label("Eliminar", systemImage: "trash")
+                                }
+                                .tint(.red)
                                 Button {
                                     habitToEdit = habit
                                 } label: {
                                     Label("Editar", systemImage: "pencil")
                                 }
                                 .tint(.oruPrimary)
+                                if habit.status == .consolidated {
+                                    Button {
+                                        viewModel.archiveHabit(habit)
+                                    } label: {
+                                        Label("Archivar", systemImage: "archivebox")
+                                    }
+                                    .tint(.orange)
+                                }
                             }
                     }
                 }
@@ -90,7 +141,13 @@ struct HabitListView: View {
                 Section("En pausa") {
                     ForEach(viewModel.otherHabits) { habit in
                         HabitRow(habit: habit, today: viewModel.currentWeekday())
-                            .swipeActions(edge: .trailing) {
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button {
+                                    habitToDelete = habit
+                                } label: {
+                                    Label("Eliminar", systemImage: "trash")
+                                }
+                                .tint(.red)
                                 Button {
                                     habitToEdit = habit
                                 } label: {
@@ -102,6 +159,7 @@ struct HabitListView: View {
                 }
             }
         }
+        .listRowSpacing(10)
         .scrollDismissesKeyboard(.immediately)
     }
 
@@ -261,6 +319,7 @@ private struct QuantityHabitRow: View {
 
                 progressLabel
             }
+            .padding(.vertical, 4)
 
             if isEntering {
                 HStack(spacing: 8) {
@@ -284,7 +343,6 @@ private struct QuantityHabitRow: View {
                 .task { isFocused = true }
             }
         }
-        .padding(.vertical, 4)
         .animation(.easeOut(duration: 0.2), value: isEntering)
         .onChange(of: isFocused) { _, focused in
             if !focused && isEntering { isEntering = false }
@@ -414,20 +472,26 @@ private struct HabitListPreview: View {
         )
         correr.unit = km
 
-        let leer = Habit(
-            icon: "📖",
-            name: "Leer",
-            type: .boolean,
-            scheduledDays: [.sunday]
-        )
-
         context.insert(meditar)
         context.insert(correr)
-        context.insert(leer)
+        for dayOffset in 1...30 {
+            let compliance = Compliance(
+                date: Calendar.current.date(byAdding: .day, value: -dayOffset, to: .now) ?? .now,
+                completed: true
+            )
+            compliance.habit = meditar
+            context.insert(compliance)
+        }
 
-        let complianceCorrer = Compliance(date: .now, completed: false, recordedAmount: nil)
-        complianceCorrer.habit = correr
-        context.insert(complianceCorrer)
+        for dayOffset in 1...65 {
+            let compliance = Compliance(
+                date: Calendar.current.date(byAdding: .day, value: -dayOffset, to: .now) ?? .now,
+                completed: true,
+                recordedAmount: 5
+            )
+            compliance.habit = correr
+            context.insert(compliance)
+        }
 
         let repository = HabitRepository(modelContext: context)
         _viewModel = State(initialValue: HabitViewModel(repository: repository))

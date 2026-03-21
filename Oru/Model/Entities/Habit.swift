@@ -70,6 +70,7 @@ extension Habit {
     enum HabitStatus: String, Codable, CaseIterable {
         case active
         case consolidated
+        case archived
     }
 
     enum Weekday: Int, Codable, CaseIterable {

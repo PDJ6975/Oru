@@ -139,6 +139,28 @@ private struct OruNavigationIconSecondaryModifier: ViewModifier {
     }
 }
 
+// MARK: - Consolidation Progress
+
+private struct ConsolidationCardBackground: View {
+    let progress: Double
+
+    var body: some View {
+        let clampedProgress = min(max(progress, 0), 1)
+
+        GeometryReader { geo in
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(.background)
+            
+            UnevenRoundedRectangle(
+                cornerRadii: .init(topLeading: 12, bottomLeading: 12),
+                style: .continuous
+            )
+            .fill(Color.oruPrimary.opacity(0.08))
+            .frame(width: geo.size.width * clampedProgress)
+        }
+    }
+}
+
 // MARK: - Pulse Animation
 
 private struct OruPulseModifier: ViewModifier {
@@ -223,5 +245,10 @@ extension View {
 
     func oruPulse(scale: CGFloat = 1.25, action: @escaping () -> Void) -> some View {
         modifier(OruPulseModifier(scale: scale, action: action))
+    }
+
+    func oruConsolidationCard(progress: Double) -> some View {
+        self
+            .listRowBackground(ConsolidationCardBackground(progress: progress))
     }
 }
