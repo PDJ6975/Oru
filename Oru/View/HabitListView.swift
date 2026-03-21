@@ -65,6 +65,21 @@ struct HabitListView: View {
         } message: {
             Text("Se eliminará el hábito y todo su historial. Esta acción no se puede deshacer.")
         }
+        .alert(
+            "¡Hábito consolidado! 🎉",
+            isPresented: Binding(
+                get: { viewModel.consolidatedHabit != nil },
+                set: { if !$0 { viewModel.consolidatedHabit = nil } }
+            )
+        ) {
+            Button("Aceptar") {
+                viewModel.consolidatedHabit = nil
+            }
+        } message: {
+            if let habit = viewModel.consolidatedHabit {
+                Text("¡Enhorabuena! \(habit.name) ya es parte de ti. Puedes mantenerlo en tu día a día o, cuando sientas que ya no necesitas registrarlo, deslízalo para archivarlo en tus estadísticas.")
+            }
+        }
         .onAppear {
             viewModel.loadHabits()
         }
@@ -91,6 +106,7 @@ struct HabitListView: View {
                 } else {
                     ForEach(viewModel.todayHabits) { habit in
                         TodayHabitRow(habit: habit, viewModel: viewModel)
+                            .oruConsolidationCard(progress: viewModel.consolidationProgress(for: habit))
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button {
                                     habitToDelete = habit
@@ -104,6 +120,14 @@ struct HabitListView: View {
                                     Label("Editar", systemImage: "pencil")
                                 }
                                 .tint(.oruPrimary)
+                                if habit.status == .consolidated {
+                                    Button {
+                                        viewModel.archiveHabit(habit)
+                                    } label: {
+                                        Label("Archivar", systemImage: "archivebox")
+                                    }
+                                    .tint(.orange)
+                                }
                             }
                     }
                 }
@@ -131,6 +155,7 @@ struct HabitListView: View {
                 }
             }
         }
+        .listRowSpacing(10)
         .scrollDismissesKeyboard(.immediately)
     }
 
@@ -213,7 +238,6 @@ private struct BooleanHabitRow: View {
             }
         }
         .padding(.vertical, 4)
-        .oruConsolidationProgress(viewModel.consolidationProgress(for: habit), leadingInset: 33)
     }
 }
 
@@ -292,8 +316,6 @@ private struct QuantityHabitRow: View {
                 progressLabel
             }
             .padding(.vertical, 4)
-            .oruConsolidationProgress(viewModel.consolidationProgress(for: habit), leadingInset: 33)
-            .transaction { $0.animation = nil }
 
             if isEntering {
                 HStack(spacing: 8) {

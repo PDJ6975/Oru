@@ -141,34 +141,23 @@ private struct OruNavigationIconSecondaryModifier: ViewModifier {
 
 // MARK: - Consolidation Progress
 
-private struct ConsolidationProgressModifier: ViewModifier {
+private struct ConsolidationCardBackground: View {
     let progress: Double
-    let leadingInset: CGFloat
 
-    func body(content: Content) -> some View {
-        content
-            .background(alignment: .leading) {
-                GeometryReader { geo in
-                    let clampedProgress = min(max(progress, 0), 1)
-                    let trailingMargin: CGFloat = 8
-                    let availableWidth = geo.size.width - leadingInset - trailingMargin
+    var body: some View {
+        let clampedProgress = min(max(progress, 0), 1)
 
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: clampedProgress >= 1
-                                    ? [Color.oruPrimary.opacity(0.15)]
-                                    : [Color.oruPrimary.opacity(0.15), .clear],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .frame(width: availableWidth * clampedProgress)
-                        .padding(.vertical, -4)
-                        .padding(.leading, leadingInset)
-                }
-            }
-            .transaction { $0.animation = nil }
+        GeometryReader { geo in
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(.background)
+            
+            UnevenRoundedRectangle(
+                cornerRadii: .init(topLeading: 12, bottomLeading: 12),
+                style: .continuous
+            )
+            .fill(Color.oruPrimary.opacity(0.08))
+            .frame(width: geo.size.width * clampedProgress)
+        }
     }
 }
 
@@ -258,7 +247,8 @@ extension View {
         modifier(OruPulseModifier(scale: scale, action: action))
     }
 
-    func oruConsolidationProgress(_ progress: Double, leadingInset: CGFloat = 0) -> some View {
-        modifier(ConsolidationProgressModifier(progress: progress, leadingInset: leadingInset))
+    func oruConsolidationCard(progress: Double) -> some View {
+        self
+            .listRowBackground(ConsolidationCardBackground(progress: progress))
     }
 }

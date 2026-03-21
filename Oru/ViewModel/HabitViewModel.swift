@@ -8,6 +8,7 @@ class HabitViewModel {
 
     var habits: [Habit] = []
     var lastError: String?
+    var consolidatedHabit: Habit?
 
     var todayHabits: [Habit] {
         let today = currentWeekday()
@@ -25,7 +26,7 @@ class HabitViewModel {
 
     func loadHabits() {
         do {
-            habits = try repository.fetchAllHabits().filter { $0.status == .active }
+            habits = try repository.fetchAllHabits().filter { $0.status != .archived }
         } catch {
             lastError = "No se pudieron cargar los hábitos: \(error.localizedDescription)"
             habits = []
@@ -44,6 +45,7 @@ class HabitViewModel {
         }
         do {
             try repository.saveChanges()
+            checkConsolidation(for: habit)
         } catch {
             lastError = "No se pudo guardar el cambio: \(error.localizedDescription)"
         }
@@ -67,11 +69,12 @@ class HabitViewModel {
                 compliance.habit = habit
             }
             try repository.saveChanges()
+            checkConsolidation(for: habit)
         } catch {
             lastError = "No se pudo registrar la cantidad: \(error.localizedDescription)"
         }
     }
-    
+
     // Evalúa si la cantidad registrada alcanza el objetivo diario
     // Sin objetivo definido, cualquier cantidad > 0 se considera completado
     func isGoalMet(_ amount: Double, for habit: Habit) -> Bool {
@@ -90,9 +93,23 @@ class HabitViewModel {
     // Calcula el progreso de consolidación (0.0 a 1.0) basado en días completados / 66
     func consolidationProgress(for habit: Habit) -> Double {
         let completedDays = habit.compliances.filter(\.completed).count
-        if completedDays >= 66 { return 1.0 }
-        let steps = completedDays / 5 * 5
-        return Double(steps) / 66.0
+        return min(Double(completedDays) / 66.0, 1.0)
+    }
+
+    // Detecta si el hábito acaba de alcanzar o perder los 66 días completados
+    private func checkConsolidation(for habit: Habit) {
+        let completedDays = habit.compliances.filter(\.completed).count
+        if completedDays >= 66, habit.status == .active {
+            habit.status = .consolidated
+            consolidatedHabit = habit
+        } else if completedDays < 66, habit.status == .consolidated {
+            habit.status = .active
+        }
+        do {
+            try repository.saveChanges()
+        } catch {
+            lastError = "No se pudo actualizar el estado del hábito: \(error.localizedDescription)"
+        }
     }
 
     // Convierte el día de la semana del calendario internacional a nuestro modelo
@@ -182,6 +199,16 @@ class HabitViewModel {
             loadHabits()
         } catch {
             lastError = "No se pudo crear el hábito: \(error.localizedDescription)"
+        }
+    }
+
+    func archiveHabit(_ habit: Habit) {
+        habit.status = .archived
+        do {
+            try repository.saveChanges()
+            loadHabits()
+        } catch {
+            lastError = "No se pudo archivar el hábito: \(error.localizedDescription)"
         }
     }
 
