@@ -5,6 +5,7 @@ struct StatsView: View {
 
     var viewModel: StatsViewModel
     @State private var showAllHabits = false
+    @State private var showRankingInfo = false
 
     private let gridColumns = [
         GridItem(.flexible(), spacing: 12),
@@ -16,9 +17,9 @@ struct StatsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // MARK: - Mi Resumen General
+                // MARK: - Tu Resumen General
                 VStack(spacing: 18) {
-                    Text("Mi Resumen General")
+                    Text("Tu Resumen General")
                         .oruSectionTitle()
                         .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -38,10 +39,8 @@ struct StatsView: View {
                     Divider()
                 }
 
-                // MARK: - Mis Hábitos
-                if !viewModel.habitStats.isEmpty {
-                    habitsSection
-                }
+                // MARK: - Tus Rutinas Principales
+                habitsSection
             }
             .padding(.horizontal)
         }
@@ -55,7 +54,7 @@ struct StatsView: View {
                             .oruAccentPrimary()
                     }
                     .disabled(!canGoBack)
-                    .opacity(canGoBack ? 1 : 0)
+                    .opacity(canGoBack ? 1 : 0) // se oculta y no se eliminan para que el título esté fijo
 
                     HStack(spacing: 0) {
                         Text("Seguimiento Anual ")
@@ -115,29 +114,55 @@ struct StatsView: View {
 
     private var habitsSection: some View {
         VStack(spacing: 14) {
-            Text("Mis Hábitos")
-                .oruSectionTitle()
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: 6) {
+                Text("Tus Rutinas Principales")
+                    .oruSectionTitle()
 
-            ForEach(visibleHabits) { stat in
-                habitRow(stat)
+                Button { showRankingInfo.toggle() } label: {
+                    Image(systemName: "questionmark")
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color.oruPrimary)
+                        .padding(4)
+                }
+                .glassEffect(.regular, in: .circle)
+                .popover(isPresented: $showRankingInfo, arrowEdge: .top) {
+                    Text("Tus hábitos se ordenan según constancia y racha actual."
+                         + " Cuantos más días completes y mayor sea tu racha,"
+                         + " más arriba aparecerán 🙌🏻.")
+                        .oruTip()
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(width: 240)
+                        .padding()
+                        .presentationCompactAdaptation(.popover)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if viewModel.habitStats.isEmpty {
+                statsEmptyRow
+            } else {
+                ForEach(visibleHabits) { stat in
+                    habitRow(stat)
+                }
             }
 
             if hasMoreHabits {
-                Button {
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        showAllHabits.toggle()
-                    }
-                } label: {
-                    HStack(spacing: 4) {
+                HStack {
+                    Spacer()
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            showAllHabits.toggle()
+                        }
+                    } label: {
                         Text(showAllHabits ? "Ver menos" : "Ver todos")
-                        Image(systemName: showAllHabits ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 10, weight: .bold))
+                            .oruExpandButton()
+                        .foregroundStyle(Color.oruPrimary)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 3)
                     }
-                    .oruButton()
-                    .foregroundStyle(Color.oruPrimary)
+                    .glassEffect(.regular, in: .capsule)
                 }
-                .padding(.top, 4)
             }
         }
     }
@@ -148,33 +173,57 @@ struct StatsView: View {
                 .font(.system(size: 24))
                 .frame(width: 36)
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text(stat.habit.name)
-                    .oruTextPrimary()
-                    .lineLimit(1)
+            VStack(spacing: 6) {
+                // Fila 1: nombre a la izquierda, métricas principales a la derecha
+                HStack {
+                    Text(stat.habit.name)
+                        .oruTextPrimary()
+                        .lineLimit(1)
 
-                HStack(spacing: 14) {
-                    habitMetric(icon: "flame", value: "\(stat.currentStreak)")
-                    habitMetric(icon: "trophy", value: "\(stat.bestStreak)")
-                    habitMetric(icon: "checkmark.seal", value: "\(stat.totalCompleted)")
+                    Spacer(minLength: 0)
 
-                    if let total = stat.totalAccumulated {
-                        habitMetric(
-                            icon: "sum",
-                            value: total.formatted(unit: stat.habit.unit)
-                        )
+                    HStack(spacing: 10) {
+                        habitMetric(icon: "flame", value: "\(stat.currentStreak)")
+                        habitMetric(icon: "trophy", value: "\(stat.bestStreak)")
+                        habitMetric(icon: "checkmark.seal", value: "\(stat.totalCompleted)")
                     }
+                }
 
-                    if let avg = stat.dailyAverage {
-                        habitMetric(
-                            icon: "chart.line.uptrend.xyaxis",
-                            value: avg.formatted(unit: stat.habit.unit)
-                        )
+                // Fila 2 (solo quantity): acumulado a la izquierda, media a la derecha
+                if stat.totalAccumulated != nil || stat.dailyAverage != nil {
+                    HStack {
+                        if let total = stat.totalAccumulated {
+                            Text("Total: \(total.formatted(unit: stat.habit.unit))")
+                                .oruTextSecondary()
+                        }
+
+                        Spacer(minLength: 0)
+
+                        if let avg = stat.dailyAverage {
+                            Text("Media: \(avg.formatted(unit: stat.habit.unit))")
+                                .oruTextSecondary()
+                        }
                     }
                 }
             }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .glassEffect(.regular, in: .rect(cornerRadius: 14))
+    }
 
-            Spacer(minLength: 0)
+    private var statsEmptyRow: some View {
+        HStack(spacing: 10) {
+            Text("😬")
+                .font(.system(size: 22))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Sin estadísticas aún")
+                    .oruTextPrimary()
+
+                Text("Registra hábitos para ver aquí tu progreso.")
+                    .oruTextSecondary()
+            }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
@@ -187,7 +236,7 @@ struct StatsView: View {
                 .font(.system(size: 10))
                 .foregroundStyle(Color.oruPrimary)
             Text(value)
-                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .oruExpandButton()
                 .foregroundStyle(.secondary)
         }
     }

@@ -50,6 +50,13 @@ private struct OruButtonModifier: ViewModifier {
     }
 }
 
+private struct OruExpandButtonModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 12, weight: .medium, design: .rounded))
+    }
+}
+
 // MARK: - Input Big
 
 private struct OruInputBigModifier: ViewModifier {
@@ -248,6 +255,10 @@ extension View {
 
     func oruButton() -> some View {
         modifier(OruButtonModifier())
+    }
+
+    func oruExpandButton() -> some View {
+        modifier(OruExpandButtonModifier())
     }
 
     func oruInputBig() -> some View {
