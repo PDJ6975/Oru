@@ -6,6 +6,7 @@ struct StatsView: View {
     var viewModel: StatsViewModel
     @State private var showAllHabits = false
     @State private var showRankingInfo = false
+    @State private var showArchivedInfo = false
 
     private let gridColumns = [
         GridItem(.flexible(), spacing: 12),
@@ -41,6 +42,12 @@ struct StatsView: View {
 
                 // MARK: - Tus Rutinas Principales
                 habitsSection
+
+                // MARK: - Hábitos Archivados
+                if !viewModel.archivedHabitStats.isEmpty {
+                    Divider()
+                    archivedSection
+                }
             }
             .padding(.horizontal)
         }
@@ -157,9 +164,9 @@ struct StatsView: View {
                     } label: {
                         Text(showAllHabits ? "Ver menos" : "Ver todos")
                             .oruExpandButton()
-                        .foregroundStyle(Color.oruPrimary)
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 3)
+                            .foregroundStyle(Color.oruPrimary)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 3)
                     }
                     .glassEffect(.regular, in: .capsule)
                 }
@@ -228,6 +235,88 @@ struct StatsView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .glassEffect(.regular, in: .rect(cornerRadius: 14))
+    }
+
+    // MARK: - Sección de hábitos archivados
+
+    private var archivedSection: some View {
+        VStack(spacing: 14) {
+            HStack(spacing: 6) {
+                Text("Hábitos que te Definen")
+                    .oruSectionTitle()
+
+                Button { showArchivedInfo.toggle() } label: {
+                    Image(systemName: "questionmark")
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color.oruPrimary)
+                        .padding(4)
+                }
+                .glassEffect(.regular, in: .circle)
+                .popover(isPresented: $showArchivedInfo, arrowEdge: .top) {
+                    Text("Aquí se almacenan los hábitos consolidados"
+                         + " que has archivado y que definen tu identidad 🌟.")
+                        .oruTip()
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(width: 240)
+                        .padding()
+                        .presentationCompactAdaptation(.popover)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            VStack(spacing: 0) {
+                ForEach(Array(viewModel.archivedHabitStats.enumerated()), id: \.element.id) { idx, stat in
+                    archivedRow(stat)
+
+                    if idx < viewModel.archivedHabitStats.count - 1 {
+                        Divider().padding(.horizontal, 14)
+                    }
+                }
+            }
+            .glassEffect(.regular, in: .rect(cornerRadius: 14))
+        }
+    }
+
+    private func archivedRow(_ stat: StatsViewModel.HabitStats) -> some View {
+        HStack(spacing: 12) {
+            Text(stat.habit.icon)
+                .font(.system(size: 22))
+                .frame(width: 32)
+
+            VStack(spacing: 6) {
+                HStack {
+                    Text(stat.habit.name)
+                        .oruTextPrimary()
+                        .lineLimit(1)
+
+                    Spacer(minLength: 0)
+
+                    HStack(spacing: 10) {
+                        habitMetric(icon: "trophy", value: "\(stat.bestStreak)")
+                        habitMetric(icon: "checkmark.seal", value: "\(stat.totalCompleted)")
+                    }
+                }
+
+                if stat.totalAccumulated != nil || stat.dailyAverage != nil {
+                    HStack {
+                        if let total = stat.totalAccumulated {
+                            Text("Total: \(total.formatted(unit: stat.habit.unit))")
+                                .oruTextSecondary()
+                        }
+
+                        Spacer(minLength: 0)
+
+                        if let avg = stat.dailyAverage {
+                            Text("Media: \(avg.formatted(unit: stat.habit.unit))")
+                                .oruTextSecondary()
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
     }
 
     private func habitMetric(icon: String, value: String) -> some View {
@@ -320,10 +409,30 @@ private struct StatsPreview: View {
             scheduledDays: [.tuesday, .thursday, .saturday],
             creationDate: cal.date(from: DateComponents(year: 2026, month: 2)) ?? .now
         )
-        return ([meditar, correr, leer, estirar], [km, paginas])
+        let nadar = Habit(
+            icon: "🏊🏼", name: "Nadar", type: .quantity,
+            scheduledDays: [.tuesday, .thursday], dailyGoal: 2,
+            creationDate: cal.date(from: DateComponents(year: 2025, month: 3)) ?? .now
+        )
+        nadar.unit = km
+        nadar.status = .archived
+        nadar.archivedDate = cal.date(from: DateComponents(year: 2025, month: 6)) ?? .now
+        let journaling = Habit(
+            icon: "✍🏼", name: "Journaling", type: .boolean,
+            scheduledDays: [.monday, .wednesday, .friday],
+            creationDate: cal.date(from: DateComponents(year: 2025, month: 4)) ?? .now
+        )
+        journaling.status = .archived
+        journaling.archivedDate = cal.date(from: DateComponents(year: 2025, month: 8)) ?? .now
+        return ([meditar, correr, leer, estirar, nadar, journaling], [km, paginas])
     }
 
     private static func insertCompliances(habits: [Habit], into context: ModelContext) {
+        insertActiveCompliances(habits: habits, into: context)
+        insertArchivedCompliances(habits: habits, into: context)
+    }
+
+    private static func insertActiveCompliances(habits: [Habit], into context: ModelContext) {
         let cal = Calendar.current
         let meditar = habits[0]
         let correr = habits[1]
@@ -366,6 +475,29 @@ private struct StatsPreview: View {
                 completed: off % 2 == 0
             )
             cmp.habit = estirar; context.insert(cmp)
+        }
+    }
+
+    private static func insertArchivedCompliances(habits: [Habit], into context: ModelContext) {
+        let cal = Calendar.current
+        let nadar = habits[4]
+        let journaling = habits[5]
+
+        // Nadar (archivado, quantity) - 25 días
+        for off in 30...55 {
+            let cmp = Compliance(
+                date: cal.date(byAdding: .day, value: -off, to: .now) ?? .now,
+                completed: true, recordedAmount: Double.random(in: 1...4)
+            )
+            cmp.habit = nadar; context.insert(cmp)
+        }
+        // Journaling (archivado, boolean) - 40 días
+        for off in 20...60 {
+            let cmp = Compliance(
+                date: cal.date(byAdding: .day, value: -off, to: .now) ?? .now,
+                completed: off % 5 != 0
+            )
+            cmp.habit = journaling; context.insert(cmp)
         }
     }
 }

@@ -430,6 +430,7 @@ struct HabitConsolidationTests {
         vm.archiveHabit(habit)
 
         #expect(habit.status == .archived)
+        #expect(habit.archivedDate != nil)
     }
 
     @Test func archiveHabit_removesFromList() {

@@ -23,6 +23,7 @@ class StatsViewModel {
 
     // Métricas por hábito (ordenadas por puntuación descendente)
     private(set) var habitStats: [HabitStats] = []
+    private(set) var archivedHabitStats: [HabitStats] = []
 
     init(repository: HabitRepositoryProtocol) {
         self.repository = repository
@@ -111,7 +112,9 @@ class StatsViewModel {
         let index = buildComplianceIndex(range: range)
         let (daily, accumulators) = computeDayByDay(range: range, index: index, today: today)
         deriveGlobalMetrics(daily: daily, range: range, today: today)
-        habitStats = buildHabitStats(accumulators: accumulators, amounts: index.amounts)
+        let (active, archived) = buildHabitStats(accumulators: accumulators, amounts: index.amounts)
+        habitStats = active
+        archivedHabitStats = archived
     }
 
     // ── Paso 1: índice de días completados y cantidades registradas por hábito ──
@@ -151,6 +154,9 @@ class StatsViewModel {
     //   - Actualizamos DayInfo global (scheduled/completed del día)
     //   - Actualizamos HabitAccumulator individual (racha y total del hábito)
     //
+    // Los archivados contribuyen a métricas globales solo hasta su archivedDate.
+    // Ejemplo: Nadar (creado 1-mar, archivado 15-jun) solo cuenta de mar a jun.
+    //
     // Ejemplo para el lunes 13-ene:
     //   Meditar: creado 10-ene ≤ 13-ene ✓, tiene lunes ✓ -> scheduled+1
     //     ¿completedDays[Meditar] contiene 13-ene? -> sí -> completed+1, racha+1
@@ -165,13 +171,26 @@ class StatsViewModel {
         var accumulators: [ObjectIdentifier: HabitAccumulator] = [:]
         var day = range.start
 
+        // Precomputar fechas de inicio y fin de cada hábito para no recalcularlas O(días × hábitos) veces
+        // fin = archivedDate si archivado, nil si activo/consolidado (sin límite)
+        let habitRanges: [ObjectIdentifier: (start: Date, end: Date?)] = Dictionary(
+            uniqueKeysWithValues: habits.map {
+                let end = $0.archivedDate.map { calendar.startOfDay(for: $0) }
+                return (ObjectIdentifier($0), (calendar.startOfDay(for: $0.creationDate), end))
+            }
+        )
+
         while day <= range.end {
             let wd = weekday(from: day)
             for habit in habits {
-                let habitStart = calendar.startOfDay(for: habit.creationDate)
-                guard habitStart <= day, habit.scheduledDays.contains(wd) else { continue }
-
                 let key = ObjectIdentifier(habit)
+                guard let habitRange = habitRanges[key],
+                      habitRange.start <= day,
+                      habit.scheduledDays.contains(wd) else { continue }
+
+                // Si el hábito fue archivado antes de este día, no cuenta
+                if let end = habitRange.end, day > end { continue }
+
                 let wasCompleted = index.completed[key]?.contains(day) == true
 
                 // Global: programado y completado para este día
@@ -231,40 +250,57 @@ class StatsViewModel {
     }
 
     // Transforma los acumuladores en HabitStats ordenados por puntuación
+    // Separa activos/consolidados de archivados en una sola pasada
     // Puntuación = Completados × (1 + RachaActual / 10)
     // Ejemplo: Meditar con 15 completados y racha de 8 -> 15 × 1.8 = 27.0
     private func buildHabitStats(
         accumulators: [ObjectIdentifier: HabitAccumulator],
         amounts: [ObjectIdentifier: [Double]]
-    ) -> [HabitStats] {
-        habits
-            .filter { $0.status != .archived }
-            .compactMap { habit in
-                let key = ObjectIdentifier(habit)
-                guard let acc = accumulators[key] else { return nil }
+    ) -> (active: [HabitStats], archived: [HabitStats]) {
+        var active: [HabitStats] = []
+        var archived: [HabitStats] = []
 
-                // Total acumulado y media: solo para hábitos de cantidad
-                // Ejemplo: Correr con amounts [5.0, 3.5, 7.0] -> total=15.5, avg=5.17
-                var totalAccumulated: Double?
-                var dailyAverage: Double?
-                if let habitAmounts = amounts[key] {
-                    let sum = habitAmounts.reduce(0, +)
-                    totalAccumulated = sum
-                    dailyAverage = sum / Double(habitAmounts.count)
-                }
+        for habit in habits {
+            let key = ObjectIdentifier(habit)
+            guard let acc = accumulators[key] else { continue }
 
-                let score = Double(acc.totalCompleted) * (1.0 + Double(acc.currentStreak) / 10.0)
-
-                return HabitStats(
-                    habit: habit,
-                    currentStreak: acc.currentStreak,
-                    bestStreak: acc.bestStreak,
-                    totalCompleted: acc.totalCompleted,
-                    totalAccumulated: totalAccumulated,
-                    dailyAverage: dailyAverage,
-                    score: score
-                )
+            let stats = makeHabitStats(habit: habit, acc: acc, amounts: amounts[key])
+            if habit.status == .archived {
+                archived.append(stats)
+            } else {
+                active.append(stats)
             }
-            .sorted { $0.score > $1.score }
+        }
+
+        active.sort { $0.score > $1.score }
+        archived.sort { $0.score > $1.score }
+        return (active, archived)
+    }
+
+    // Construye un HabitStats individual a partir de su acumulador y cantidades
+    private func makeHabitStats(
+        habit: Habit,
+        acc: HabitAccumulator,
+        amounts: [Double]?
+    ) -> HabitStats {
+        var totalAccumulated: Double?
+        var dailyAverage: Double?
+        if let habitAmounts = amounts {
+            let sum = habitAmounts.reduce(0, +)
+            totalAccumulated = sum
+            dailyAverage = sum / Double(habitAmounts.count)
+        }
+
+        let score = Double(acc.totalCompleted) * (1.0 + Double(acc.currentStreak) / 10.0)
+
+        return HabitStats(
+            habit: habit,
+            currentStreak: acc.currentStreak,
+            bestStreak: acc.bestStreak,
+            totalCompleted: acc.totalCompleted,
+            totalAccumulated: totalAccumulated,
+            dailyAverage: dailyAverage,
+            score: score
+        )
     }
 }

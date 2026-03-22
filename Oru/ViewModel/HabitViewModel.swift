@@ -205,6 +205,7 @@ class HabitViewModel {
 
     func archiveHabit(_ habit: Habit) {
         habit.status = .archived
+        habit.archivedDate = .now
         do {
             try repository.saveChanges()
             loadHabits()

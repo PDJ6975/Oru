@@ -12,6 +12,7 @@ final class Habit {
     var creationDate: Date
     var startDate: Date
     var status: HabitStatus
+    var archivedDate: Date?
 
     var user: User?
 
