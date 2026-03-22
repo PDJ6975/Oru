@@ -5,6 +5,7 @@ import SwiftData
 class StatsViewModel {
 
     private let repository: HabitRepositoryProtocol
+    private let origamiRepository: OrigamiRepositoryProtocol
     private let calendar = Calendar.current
 
     var selectedYear: Int {
@@ -25,18 +26,26 @@ class StatsViewModel {
     private(set) var habitStats: [HabitStats] = []
     private(set) var archivedHabitStats: [HabitStats] = []
 
-    init(repository: HabitRepositoryProtocol) {
+    // Origamis completados por el usuario (filtrados por año seleccionado)
+    private(set) var completedOrigamis: [UserOrigami] = []
+    private var allCompletedOrigamis: [UserOrigami] = []
+
+    init(repository: HabitRepositoryProtocol, origamiRepository: OrigamiRepositoryProtocol) {
         self.repository = repository
+        self.origamiRepository = origamiRepository
         self.selectedYear = calendar.component(.year, from: .now)
     }
 
     func loadStats() {
         do {
             habits = try repository.fetchAllHabits()
-            recomputeMetrics() // Orquesta el cálculo de estadísticas en general
+            allCompletedOrigamis = try origamiRepository.fetchCompletedOrigamis()
+            recomputeMetrics()
         } catch {
             lastError = "No se pudieron cargar las estadísticas: \(error.localizedDescription)"
             habits = []
+            allCompletedOrigamis = []
+            completedOrigamis = []
         }
     }
 
@@ -115,6 +124,10 @@ class StatsViewModel {
         let (active, archived) = buildHabitStats(accumulators: accumulators, amounts: index.amounts)
         habitStats = active
         archivedHabitStats = archived
+        completedOrigamis = allCompletedOrigamis.filter { uo in
+            guard let date = uo.completionDate else { return false }
+            return date >= range.start && date <= range.end
+        }
     }
 
     // ── Paso 1: índice de días completados y cantidades registradas por hábito ──

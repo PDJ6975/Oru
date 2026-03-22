@@ -52,7 +52,8 @@ struct HabitListView: View {
             NavigationStack {
                 StatsView(
                     viewModel: StatsViewModel(
-                        repository: HabitRepository(modelContext: modelContext)
+                        repository: HabitRepository(modelContext: modelContext),
+                        origamiRepository: OrigamiRepository(modelContext: modelContext)
                     )
                 )
             }

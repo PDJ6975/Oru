@@ -7,6 +7,7 @@ struct StatsView: View {
     @State private var showAllHabits = false
     @State private var showRankingInfo = false
     @State private var showArchivedInfo = false
+    @State private var selectedOrigami: UserOrigami?
 
     private let gridColumns = [
         GridItem(.flexible(), spacing: 12),
@@ -47,6 +48,12 @@ struct StatsView: View {
                 if !viewModel.archivedHabitStats.isEmpty {
                     Divider()
                     archivedSection
+                }
+
+                // MARK: - Galería de Origamis
+                if !viewModel.completedOrigamis.isEmpty {
+                    Divider()
+                    origamiSection
                 }
             }
             .padding(.horizontal)
@@ -319,6 +326,73 @@ struct StatsView: View {
         .padding(.vertical, 12)
     }
 
+    // MARK: - Galería de origamis completados
+
+    private var origamiSection: some View {
+        VStack(spacing: 14) {
+            Text("Tu Colección de Origamis")
+                .oruSectionTitle()
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(spacing: 12) {
+                    ForEach(viewModel.completedOrigamis, id: \.id) { uo in
+                        origamiCard(uo)
+                            .containerRelativeFrame(.horizontal, count: 2, spacing: 12)
+                            .onTapGesture { selectedOrigami = uo }
+                    }
+                }
+                .scrollTargetLayout()
+            }
+            .scrollTargetBehavior(.viewAligned)
+        }
+        .sheet(item: $selectedOrigami) { uo in
+            origamiDetail(uo)
+        }
+    }
+
+    private func origamiCard(_ uo: UserOrigami) -> some View {
+        VStack(spacing: 8) {
+            // Placeholder para la ilustración del origami (se reemplazará con la imagen real)
+            Image(systemName: "bird")
+                .font(.system(size: 36))
+                .foregroundStyle(Color.oruPrimary)
+                .frame(height: 50)
+
+            Text(uo.origami?.name ?? "Origami")
+                .oruTextPrimary()
+                .lineLimit(1)
+
+            Text(uo.completionDate?.formatted(.dateTime.day().month(.abbreviated)) ?? "Sin fecha")
+                .oruTextSecondary()
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .glassEffect(.regular, in: .rect(cornerRadius: 14))
+    }
+
+    private func origamiDetail(_ uo: UserOrigami) -> some View {
+        VStack(spacing: 16) {
+            Spacer()
+
+            // Placeholder para la imagen a tamaño real
+            Image(systemName: "bird")
+                .font(.system(size: 120))
+                .foregroundStyle(Color.oruPrimary)
+
+            Text(uo.origami?.name ?? "Origami")
+                .oruSectionTitle()
+
+            Text("Completado el \(uo.completionDate?.formatted(.dateTime.day().month(.wide).year()) ?? "—")")
+                .oruTextSecondary()
+
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+    }
+
     private func habitMetric(icon: String, value: String) -> some View {
         HStack(spacing: 3) {
             Image(systemName: icon)
@@ -370,9 +444,14 @@ private struct StatsPreview: View {
         units.forEach { context.insert($0) }
         habits.forEach { context.insert($0) }
         Self.insertCompliances(habits: habits, into: context)
+        Self.insertOrigamis(into: context)
 
         let repository = HabitRepository(modelContext: context)
-        _viewModel = State(initialValue: StatsViewModel(repository: repository))
+        let origamiRepo = OrigamiRepository(modelContext: context)
+        _viewModel = State(initialValue: StatsViewModel(
+            repository: repository,
+            origamiRepository: origamiRepo
+        ))
     }
 
     var body: some View {
@@ -416,14 +495,14 @@ private struct StatsPreview: View {
         )
         nadar.unit = km
         nadar.status = .archived
-        nadar.archivedDate = cal.date(from: DateComponents(year: 2025, month: 6)) ?? .now
+        nadar.archivedDate = cal.date(from: DateComponents(year: 2026, month: 6)) ?? .now
         let journaling = Habit(
             icon: "✍🏼", name: "Journaling", type: .boolean,
             scheduledDays: [.monday, .wednesday, .friday],
             creationDate: cal.date(from: DateComponents(year: 2025, month: 4)) ?? .now
         )
         journaling.status = .archived
-        journaling.archivedDate = cal.date(from: DateComponents(year: 2025, month: 8)) ?? .now
+        journaling.archivedDate = cal.date(from: DateComponents(year: 2026, month: 8)) ?? .now
         return ([meditar, correr, leer, estirar, nadar, journaling], [km, paginas])
     }
 
@@ -498,6 +577,23 @@ private struct StatsPreview: View {
                 completed: off % 5 != 0
             )
             cmp.habit = journaling; context.insert(cmp)
+        }
+    }
+
+    private static func insertOrigamis(into context: ModelContext) {
+        let cal = Calendar.current
+        let names = ["Grulla", "Rana", "Mariposa"]
+        let daysAgo = [45, 20, 5]
+
+        for (name, ago) in zip(names, daysAgo) {
+            let origami = Origami(name: name, numberOfPhases: 5)
+            context.insert(origami)
+
+            let uo = UserOrigami()
+            uo.origami = origami
+            uo.completed = true
+            uo.completionDate = cal.date(byAdding: .day, value: -ago, to: .now)
+            context.insert(uo)
         }
     }
 }
