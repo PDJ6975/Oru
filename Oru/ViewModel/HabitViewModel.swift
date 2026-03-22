@@ -10,6 +10,9 @@ class HabitViewModel {
     var lastError: String?
     var consolidatedHabit: Habit?
 
+    // Callback que notifica cambios de completado: (completado, nHábitosHoy)
+    var onHabitToggled: ((Bool, Int) -> Void)?
+
     var todayHabits: [Habit] {
         let today = currentWeekday()
         return habits.filter { $0.scheduledDays.contains(today) }
@@ -37,6 +40,7 @@ class HabitViewModel {
     // Si existe un Compliance en el día actual -> lo invierte
     // Si no existe -> Crea un compliance para hoy como completado
     func toggleBoolean(for habit: Habit) {
+        let wasCompleted = todayCompliance(for: habit)?.completed ?? false
         if let compliance = todayCompliance(for: habit) {
             compliance.completed.toggle()
         } else {
@@ -46,6 +50,10 @@ class HabitViewModel {
         do {
             try repository.saveChanges()
             checkConsolidation(for: habit)
+            let isNowCompleted = todayCompliance(for: habit)?.completed ?? false
+            if wasCompleted != isNowCompleted {
+                onHabitToggled?(isNowCompleted, todayHabits.count)
+            }
         } catch {
             lastError = "No se pudo guardar el cambio: \(error.localizedDescription)"
         }
@@ -54,6 +62,7 @@ class HabitViewModel {
     // Si la cantidad es 0 y ya existe un compliance, lo elimina
     // Si la cantidad es > 0, crea o actualiza el compliance
     func recordAmount(_ amount: Double, for habit: Habit) {
+        let wasCompleted = todayCompliance(for: habit)?.completed ?? false
         do {
             if amount <= 0 {
                 if let compliance = todayCompliance(for: habit) {
@@ -70,6 +79,10 @@ class HabitViewModel {
             }
             try repository.saveChanges()
             checkConsolidation(for: habit)
+            let isNowCompleted = todayCompliance(for: habit)?.completed ?? false
+            if wasCompleted != isNowCompleted {
+                onHabitToggled?(isNowCompleted, todayHabits.count)
+            }
         } catch {
             lastError = "No se pudo registrar la cantidad: \(error.localizedDescription)"
         }

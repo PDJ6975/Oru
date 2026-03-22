@@ -94,6 +94,29 @@ private struct OruPillCircleModifier: ViewModifier {
     }
 }
 
+// MARK: - Greeting
+
+private struct OruGreetingModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 22, weight: .light, design: .rounded))
+            .tracking(0.8)
+            .foregroundStyle(.secondary)
+    }
+}
+
+// MARK: - Date Subtitle
+
+private struct OruDateSubtitleModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 16, weight: .thin, design: .serif))
+            .italic()
+            .tracking(0.8)
+            .foregroundStyle(.secondary)
+    }
+}
+
 // MARK: - Text Primary
 
 private struct OruTextPrimaryModifier: ViewModifier {
@@ -275,6 +298,14 @@ extension View {
 
     func oruPillCircle() -> some View {
         modifier(OruPillCircleModifier())
+    }
+
+    func oruGreeting() -> some View {
+        modifier(OruGreetingModifier())
+    }
+
+    func oruDateSubtitle() -> some View {
+        modifier(OruDateSubtitleModifier())
     }
 
     func oruTextPrimary() -> some View {
