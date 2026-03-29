@@ -15,19 +15,41 @@ class GamificationViewModel {
         currentOrigami?.progressPercentage ?? 0
     }
 
-    /// Nombre de la ilustración correspondiente a la fase actual según el progreso
-    var currentIllustrationName: String? {
+    // Umbral de progreso para desbloquear la siguiente fase
+    var nextPhaseThreshold: Double? {
         guard let userOrigami = currentOrigami,
               let origami = userOrigami.origami else { return nil }
         let totalPhases = origami.numberOfPhases
-        guard totalPhases > 0 else { return nil }
+        guard totalPhases > 1 else { return nil }
+        let nextPhase = userOrigami.revealedPhase + 1
+        guard nextPhase < totalPhases else { return nil }
+        return Double(nextPhase) * (100.0 / Double(totalPhases - 1))
+    }
+
+    // Indica si el usuario ha alcanzado el umbral y debe pulsar para avanzar
+    var hasPendingReveal: Bool {
+        guard let threshold = nextPhaseThreshold else { return false }
+        return progressPercentage >= threshold
+    }
+
+    // Nombre de la ilustración basado en la fase revelada por el usuario
+    var currentIllustrationName: String? {
+        guard let userOrigami = currentOrigami,
+              let origami = userOrigami.origami else { return nil }
         let phases = origami.phases.sorted { $0.phaseNumber < $1.phaseNumber }
-        guard !phases.isEmpty else { return nil }
-        let phaseIndex = min(
-            Int(userOrigami.progressPercentage / (100.0 / Double(totalPhases))),
-            totalPhases - 1
-        )
-        return phases[phaseIndex].illustrationName
+        let index = min(userOrigami.revealedPhase, phases.count - 1)
+        guard index >= 0, !phases.isEmpty else { return nil }
+        return phases[index].illustrationName
+    }
+
+    // Nombre de la ilustración de la siguiente fase (para la transición)
+    var nextIllustrationName: String? {
+        guard let userOrigami = currentOrigami,
+              let origami = userOrigami.origami else { return nil }
+        let phases = origami.phases.sorted { $0.phaseNumber < $1.phaseNumber }
+        let nextIndex = userOrigami.revealedPhase + 1
+        guard nextIndex < phases.count else { return nil }
+        return phases[nextIndex].illustrationName
     }
 
     init(origamiRepository: OrigamiRepositoryProtocol) {
@@ -44,14 +66,23 @@ class GamificationViewModel {
 
     // Actualiza el progreso del origami activo al completar/descompletar un hábito
     // Incremento por hábito = 3% / número de hábitos programados hoy
+    // El progreso se congela al alcanzar el umbral de la siguiente fase
     func habitToggled(completed: Bool, todayHabitCount: Int) {
-        guard todayHabitCount > 0, let origami = currentOrigami else { return }
+        guard todayHabitCount > 0, let userOrigami = currentOrigami else { return }
         let delta = dailyPercentage / Double(todayHabitCount)
+        let ceiling = nextPhaseThreshold ?? 100.0
         if completed {
-            origami.progressPercentage = min(origami.progressPercentage + delta, 100)
+            userOrigami.progressPercentage = min(userOrigami.progressPercentage + delta, ceiling)
         } else {
-            origami.progressPercentage = max(origami.progressPercentage - delta, 0)
+            userOrigami.progressPercentage = max(userOrigami.progressPercentage - delta, 0)
         }
+        save()
+    }
+
+    // Avanza a la siguiente fase cuando el usuario pulsa
+    func revealNextPhase() {
+        guard hasPendingReveal, let userOrigami = currentOrigami else { return }
+        userOrigami.revealedPhase += 1
         save()
     }
 

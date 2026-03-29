@@ -7,6 +7,9 @@ struct HomeView: View {
     @Binding var gamificationVM: GamificationViewModel?
     var illustrationOverride: String?
 
+    @State private var revealingName: String?
+    @State private var revealOpacity: Double = 0
+
     private var userName: String {
         users.first?.name ?? ""
     }
@@ -47,9 +50,7 @@ struct HomeView: View {
 
                 Spacer()
 
-                Image(illustrationOverride ?? gamificationVM?.currentIllustrationName ?? "mariposa")
-                    .resizable()
-                    .scaledToFit()
+                origamiImage
                     .padding(.horizontal, 20)
                     .padding(.bottom, 40)
             }
@@ -63,6 +64,47 @@ struct HomeView: View {
                     }
                 }
                 .padding(24)
+            }
+        }
+    }
+
+    private var breathingActive: Bool {
+        (gamificationVM?.hasPendingReveal ?? false) && revealingName == nil
+    }
+
+    @ViewBuilder
+    private var origamiImage: some View {
+        let currentName = illustrationOverride ?? gamificationVM?.currentIllustrationName ?? "mariposa"
+
+        ZStack {
+            Image(currentName)
+                .resizable()
+                .scaledToFit()
+
+            if let nextName = revealingName {
+                Image(nextName)
+                    .resizable()
+                    .scaledToFit()
+                    .opacity(revealOpacity)
+            }
+        }
+        .scaleEffect(breathingActive ? 1.05 : 1.0)
+        .animation(
+            breathingActive
+                ? .easeInOut(duration: 1.8).repeatForever(autoreverses: true)
+                : .easeInOut(duration: 0.8),
+            value: breathingActive
+        )
+        .onTapGesture {
+            guard gamificationVM?.hasPendingReveal == true else { return }
+            revealingName = gamificationVM?.nextIllustrationName
+            withAnimation(.easeIn(duration: 2.5)) {
+                revealOpacity = 1.0
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                gamificationVM?.revealNextPhase()
+                revealOpacity = 0
+                revealingName = nil
             }
         }
     }
@@ -119,7 +161,8 @@ private struct HomePreview: View {
         let uo = UserOrigami()
         uo.user = user
         uo.origami = origami
-        uo.progressPercentage = 85
+        uo.progressPercentage = 0
+        uo.revealedPhase = 0
         context.insert(uo)
 
         let repo = OrigamiRepository(modelContext: context)
@@ -130,7 +173,28 @@ private struct HomePreview: View {
 
     var body: some View {
         NavigationStack {
-            HomeView(gamificationVM: $gamificationVM)
+            ZStack {
+                HomeView(gamificationVM: $gamificationVM)
+
+                VStack {
+                    Spacer()
+                    HStack(spacing: 16) {
+                        Button("-5%") {
+                            gamificationVM?.currentOrigami?.progressPercentage = max(
+                                (gamificationVM?.progressPercentage ?? 0) - 5, 0
+                            )
+                        }
+                        Button("+5%") {
+                            let ceiling = gamificationVM?.nextPhaseThreshold ?? 100
+                            gamificationVM?.currentOrigami?.progressPercentage = min(
+                                (gamificationVM?.progressPercentage ?? 0) + 5, ceiling
+                            )
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .padding(.bottom, 80)
+                }
+            }
         }
         .modelContainer(container)
     }

@@ -3,7 +3,7 @@ import SwiftData
 
 @Model
 final class UserOrigami {
-    var currentPhase: Int
+    var revealedPhase: Int
     var completed: Bool
     var completionDate: Date?
     var progressPercentage: Double
@@ -13,12 +13,12 @@ final class UserOrigami {
     var origami: Origami?
 
     init(
-        currentPhase: Int = 1,
+        revealedPhase: Int = 0,
         completed: Bool = false,
         completionDate: Date? = nil,
         progressPercentage: Double = 0.0
     ) {
-        self.currentPhase = currentPhase
+        self.revealedPhase = revealedPhase
         self.completed = completed
         self.completionDate = completionDate
         self.progressPercentage = progressPercentage
