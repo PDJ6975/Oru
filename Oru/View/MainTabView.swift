@@ -77,7 +77,7 @@ private struct MainTabPreview: View {
         let origami = Origami(name: "mariposa", numberOfPhases: 5)
         context.insert(origami)
         for phase in 0..<5 {
-            let op = OrigamiPhase(phaseNumber: phase, illustrationName: "flor_fase5")
+            let op = OrigamiPhase(phaseNumber: phase, illustrationName: "bailarina_fase5")
             op.origami = origami
             context.insert(op)
         }

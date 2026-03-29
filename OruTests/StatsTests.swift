@@ -19,6 +19,7 @@ final class MockOrigamiRepository: OrigamiRepositoryProtocol {
     func addUserOrigami(_ userOrigami: UserOrigami) throws {
         userOrigamis.append(userOrigami)
     }
+    func seedOrigamisIfNeeded() throws {}
     func saveChanges() throws {}
 }
 

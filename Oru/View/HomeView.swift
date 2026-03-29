@@ -28,7 +28,6 @@ struct HomeView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Hola, \(userName)!")
                             .oruGreeting()
-
                         Text(todayFormatted())
                             .oruDateSubtitle()
                     }
@@ -38,13 +37,22 @@ struct HomeView: View {
                 .padding(.top, 16)
 
                 Spacer()
-            }
 
-            Image(illustrationOverride ?? gamificationVM?.currentIllustrationName ?? "mariposa")
-                .resizable()
-                .scaledToFit()
-                .padding(20)
-                .offset(y: 100)
+                Text("\"El único modo de hacer un gran trabajo es amar lo que haces.\"")
+                    .font(.system(size: 18, weight: .ultraLight, design: .serif)).italic()
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .opacity(0.9)
+                    .padding(.horizontal, 32)
+
+                Spacer()
+
+                Image(illustrationOverride ?? gamificationVM?.currentIllustrationName ?? "mariposa")
+                    .resizable()
+                    .scaledToFit()
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 40)
+            }
 
             if let gvm = gamificationVM, gvm.currentOrigami != nil {
                 VStack {
@@ -84,10 +92,9 @@ struct HomeView: View {
 
 private struct HomePreview: View {
     let container: ModelContainer
-    let illustrationOverride: String
+    @State private var gamificationVM: GamificationViewModel?
 
-    init(illustration: String = "mariposa") {
-        self.illustrationOverride = illustration
+    init() {
         let schema = Schema([
             User.self, Habit.self, Unit.self, Compliance.self,
             Origami.self, UserOrigami.self, OrigamiPhase.self, Quote.self
@@ -100,18 +107,33 @@ private struct HomePreview: View {
         let context = container.mainContext
         let user = User(name: "Antonio")
         context.insert(user)
+
+        let origami = Origami(name: "mariposa", numberOfPhases: 5)
+        context.insert(origami)
+        for phase in 0..<5 {
+            let op = OrigamiPhase(phaseNumber: phase, illustrationName: "mariposa_fase\(phase)")
+            op.origami = origami
+            context.insert(op)
+        }
+
+        let uo = UserOrigami()
+        uo.user = user
+        uo.origami = origami
+        uo.progressPercentage = 85
+        context.insert(uo)
+
+        let repo = OrigamiRepository(modelContext: context)
+        let gvm = GamificationViewModel(origamiRepository: repo)
+        gvm.loadOrigami()
+        _gamificationVM = State(initialValue: gvm)
     }
 
     var body: some View {
         NavigationStack {
-            HomeView(gamificationVM: .constant(nil), illustrationOverride: illustrationOverride)
+            HomeView(gamificationVM: $gamificationVM)
         }
         .modelContainer(container)
     }
 }
 
-#Preview("Mariposa - Fase 0") { HomePreview(illustration: "mariposa_fase0") }
-#Preview("Mariposa - Fase 1") { HomePreview(illustration: "mariposa_fase1") }
-#Preview("Mariposa - Fase 2") { HomePreview(illustration: "mariposa_fase2") }
-#Preview("Mariposa - Fase 3") { HomePreview(illustration: "mariposa_fase3") }
-#Preview("Mariposa - Fase 4") { HomePreview(illustration: "mariposa_fase4") }
+#Preview { HomePreview() }

@@ -99,7 +99,7 @@ private struct OruPillCircleModifier: ViewModifier {
 private struct OruGreetingModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .font(.system(size: 22, weight: .light, design: .rounded))
+            .font(.system(size: 25, weight: .regular, design: .rounded))
             .tracking(0.8)
             .foregroundStyle(.secondary)
     }
@@ -110,8 +110,7 @@ private struct OruGreetingModifier: ViewModifier {
 private struct OruDateSubtitleModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .font(.system(size: 16, weight: .thin, design: .serif))
-            .italic()
+            .font(.system(size: 16, weight: .light, design: .rounded))
             .tracking(0.8)
             .foregroundStyle(.secondary)
     }
