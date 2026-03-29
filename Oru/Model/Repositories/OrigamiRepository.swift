@@ -12,6 +12,9 @@ protocol OrigamiRepositoryProtocol {
     func fetchCompletedOrigamis() throws -> [UserOrigami]
     func addUserOrigami(_ userOrigami: UserOrigami) throws
 
+    // MARK: - Seed
+    func seedOrigamisIfNeeded() throws
+
     // MARK: - Persistencia
     func saveChanges() throws
 }
@@ -69,6 +72,38 @@ final class OrigamiRepository: OrigamiRepositoryProtocol {
     func addUserOrigami(_ userOrigami: UserOrigami) throws {
         modelContext.insert(userOrigami)
         try saveChanges()
+    }
+
+    // MARK: - Seed
+
+    func seedOrigamisIfNeeded() throws {
+        let descriptor = FetchDescriptor<Origami>()
+        let existingNames = Set(try modelContext.fetch(descriptor).map(\.name))
+
+        let catalog: [(name: String, phases: Int)] = [
+            ("mariposa", 5),
+            ("bailarina", 6),
+            ("flor", 6),
+            ("luna", 6)
+        ]
+
+        var didInsert = false
+        for entry in catalog where !existingNames.contains(entry.name) {
+            let origami = Origami(name: entry.name, numberOfPhases: entry.phases)
+            modelContext.insert(origami)
+
+            for phase in 0..<entry.phases {
+                let op = OrigamiPhase(
+                    phaseNumber: phase,
+                    illustrationName: "\(entry.name)_fase\(phase)"
+                )
+                op.origami = origami
+                modelContext.insert(op)
+            }
+            didInsert = true
+        }
+
+        if didInsert { try saveChanges() }
     }
 
     // MARK: - Persistencia

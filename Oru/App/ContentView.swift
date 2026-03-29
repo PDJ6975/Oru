@@ -10,9 +10,7 @@ struct ContentView: View {
     var body: some View {
         Group {
             if hasCompletedOnboarding {
-                NavigationStack {
-                    HomeView()
-                }
+                MainTabView()
             } else if showNameRegistration {
                 NameRegistrationView(
                     viewModel: WelcomeViewModel(

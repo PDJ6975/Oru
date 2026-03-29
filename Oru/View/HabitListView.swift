@@ -8,7 +8,6 @@ struct HabitListView: View {
     @State private var showCreateForm = false
     @State private var habitToEdit: Habit?
     @State private var habitToDelete: Habit?
-    @State private var showStats = false
 
     private func todayFormatted() -> String {
         let formatter = DateFormatter()
@@ -36,28 +35,13 @@ struct HabitListView: View {
                     .oruAccent()
             }
             ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button("Nuevo hábito", systemImage: "plus") {
-                        showCreateForm = true
-                    }
-                    Button("Estadísticas", systemImage: "chart.bar") {
-                        showStats = true
-                    }
+                Button {
+                    showCreateForm = true
                 } label: {
-                    Image(systemName: "ellipsis")
+                    Image(systemName: "plus")
+                        .foregroundStyle(Color.secondary)
                 }
             }
-        }
-        .sheet(isPresented: $showStats) {
-            NavigationStack {
-                StatsView(
-                    viewModel: StatsViewModel(
-                        repository: HabitRepository(modelContext: modelContext),
-                        origamiRepository: OrigamiRepository(modelContext: modelContext)
-                    )
-                )
-            }
-            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showCreateForm) {
             HabitFormView(viewModel: viewModel)

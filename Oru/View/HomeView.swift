@@ -3,10 +3,9 @@ import SwiftData
 
 struct HomeView: View {
 
-    @Environment(\.modelContext) private var modelContext
     @Query private var users: [User]
-    @State private var navigateToHabits = false
-    @State private var gamificationVM: GamificationViewModel?
+    @Binding var gamificationVM: GamificationViewModel?
+    var illustrationOverride: String?
 
     private var userName: String {
         users.first?.name ?? ""
@@ -41,43 +40,23 @@ struct HomeView: View {
                 Spacer()
             }
 
-            VStack(spacing: 16) {
-                Image(systemName: "checklist")
-                    .foregroundStyle(Color.oruPrimary)
-                    .frame(width: 50, height: 50)
-                    .glassEffect(.regular.interactive())
-                    .oruPulse { navigateToHabits = true }
+            Image(illustrationOverride ?? gamificationVM?.currentIllustrationName ?? "mariposa")
+                .resizable()
+                .scaledToFit()
+                .padding(20)
+                .offset(y: 100)
 
-                if let gvm = gamificationVM, gvm.currentOrigami != nil {
-                    origamiProgressButton(progress: gvm.progressPercentage)
+            if let gvm = gamificationVM, gvm.currentOrigami != nil {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        origamiProgressButton(progress: gvm.progressPercentage)
+                    }
                 }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .padding(24)
-        }
-        .navigationDestination(isPresented: $navigateToHabits) {
-            makeHabitListView()
-        }
-        .onAppear {
-            if gamificationVM == nil {
-                let gvm = GamificationViewModel(
-                    origamiRepository: OrigamiRepository(modelContext: modelContext)
-                )
-                gvm.loadOrigami()
-                gamificationVM = gvm
+                .padding(24)
             }
         }
-    }
-
-    private func makeHabitListView() -> HabitListView {
-        let hvm = HabitViewModel(
-            repository: HabitRepository(modelContext: modelContext)
-        )
-        let gvm = gamificationVM
-        hvm.onHabitToggled = { completed, count in
-            gvm?.habitToggled(completed: completed, todayHabitCount: count)
-        }
-        return HabitListView(viewModel: hvm)
     }
 
     private func origamiProgressButton(progress: Double) -> some View {
@@ -105,8 +84,10 @@ struct HomeView: View {
 
 private struct HomePreview: View {
     let container: ModelContainer
+    let illustrationOverride: String
 
-    init() {
+    init(illustration: String = "mariposa") {
+        self.illustrationOverride = illustration
         let schema = Schema([
             User.self, Habit.self, Unit.self, Compliance.self,
             Origami.self, UserOrigami.self, OrigamiPhase.self, Quote.self
@@ -119,21 +100,18 @@ private struct HomePreview: View {
         let context = container.mainContext
         let user = User(name: "Antonio")
         context.insert(user)
-        let origami = Origami(name: "Grulla", numberOfPhases: 5)
-        context.insert(origami)
-        let userOrigami = UserOrigami(progressPercentage: 42)
-        userOrigami.origami = origami
-        context.insert(userOrigami)
     }
 
     var body: some View {
         NavigationStack {
-            HomeView()
+            HomeView(gamificationVM: .constant(nil), illustrationOverride: illustrationOverride)
         }
         .modelContainer(container)
     }
 }
 
-#Preview {
-    HomePreview()
-}
+#Preview("Mariposa - Fase 0") { HomePreview(illustration: "mariposa_fase0") }
+#Preview("Mariposa - Fase 1") { HomePreview(illustration: "mariposa_fase1") }
+#Preview("Mariposa - Fase 2") { HomePreview(illustration: "mariposa_fase2") }
+#Preview("Mariposa - Fase 3") { HomePreview(illustration: "mariposa_fase3") }
+#Preview("Mariposa - Fase 4") { HomePreview(illustration: "mariposa_fase4") }

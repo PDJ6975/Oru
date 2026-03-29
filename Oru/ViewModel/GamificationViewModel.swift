@@ -15,6 +15,21 @@ class GamificationViewModel {
         currentOrigami?.progressPercentage ?? 0
     }
 
+    /// Nombre de la ilustración correspondiente a la fase actual según el progreso
+    var currentIllustrationName: String? {
+        guard let userOrigami = currentOrigami,
+              let origami = userOrigami.origami else { return nil }
+        let totalPhases = origami.numberOfPhases
+        guard totalPhases > 0 else { return nil }
+        let phases = origami.phases.sorted { $0.phaseNumber < $1.phaseNumber }
+        guard !phases.isEmpty else { return nil }
+        let phaseIndex = min(
+            Int(userOrigami.progressPercentage / (100.0 / Double(totalPhases))),
+            totalPhases - 1
+        )
+        return phases[phaseIndex].illustrationName
+    }
+
     init(origamiRepository: OrigamiRepositoryProtocol) {
         self.origamiRepository = origamiRepository
     }
