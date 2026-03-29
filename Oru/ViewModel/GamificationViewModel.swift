@@ -52,6 +52,19 @@ class GamificationViewModel {
         return phases[nextIndex].illustrationName
     }
 
+    // El origami está completado: última fase revelada y progreso al 100%
+    var isOrigamiCompleted: Bool {
+        guard let userOrigami = currentOrigami,
+              let origami = userOrigami.origami else { return false }
+        let lastPhase = origami.numberOfPhases - 1
+        return userOrigami.revealedPhase >= lastPhase && userOrigami.progressPercentage >= 100
+    }
+
+    // Hay más origamis disponibles para asignar
+    var hasNextOrigamiAvailable: Bool {
+        (try? origamiRepository.fetchNextOrigami()) != nil
+    }
+
     init(origamiRepository: OrigamiRepositoryProtocol) {
         self.origamiRepository = origamiRepository
     }
@@ -84,6 +97,28 @@ class GamificationViewModel {
         guard hasPendingReveal, let userOrigami = currentOrigami else { return }
         userOrigami.revealedPhase += 1
         save()
+    }
+
+    // Completa el origami actual y asigna uno nuevo aleatorio
+    func completeAndAssignNext() {
+        guard let userOrigami = currentOrigami else { return }
+        userOrigami.completed = true
+        userOrigami.completionDate = .now
+
+        do {
+            if let nextOrigami = try origamiRepository.fetchNextOrigami() {
+                let newUserOrigami = UserOrigami()
+                newUserOrigami.user = userOrigami.user
+                newUserOrigami.origami = nextOrigami
+                try origamiRepository.addUserOrigami(newUserOrigami)
+                currentOrigami = newUserOrigami
+            } else {
+                currentOrigami = nil
+            }
+            try origamiRepository.saveChanges()
+        } catch {
+            lastError = "No se pudo asignar el siguiente origami: \(error.localizedDescription)"
+        }
     }
 
     private func save() {

@@ -353,17 +353,16 @@ struct StatsView: View {
 
     private func origamiCard(_ uo: UserOrigami) -> some View {
         VStack(spacing: 8) {
-            // Placeholder para la ilustración del origami (se reemplazará con la imagen real)
-            Image(systemName: "bird")
-                .font(.system(size: 36))
-                .foregroundStyle(Color.oruPrimary)
-                .frame(height: 50)
+            Image(uo.lastPhaseIllustration ?? "mariposa")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 140)
 
-            Text(uo.origami?.name ?? "Origami")
+            Text(uo.origami?.name.capitalized ?? "Origami")
                 .oruTextPrimary()
                 .lineLimit(1)
 
-            Text(uo.completionDate?.formatted(.dateTime.day().month(.abbreviated)) ?? "Sin fecha")
+            Text(uo.completionDate?.formatted(.dateTime.day().month(.abbreviated).locale(Locale(identifier: "es_ES"))) ?? "Sin fecha")
                 .oruTextSecondary()
         }
         .frame(maxWidth: .infinity)
@@ -375,15 +374,15 @@ struct StatsView: View {
         VStack(spacing: 16) {
             Spacer()
 
-            // Placeholder para la imagen a tamaño real
-            Image(systemName: "bird")
-                .font(.system(size: 120))
-                .foregroundStyle(Color.oruPrimary)
+            Image(uo.lastPhaseIllustration ?? "mariposa")
+                .resizable()
+                .scaledToFit()
+                .padding(.horizontal, 40)
 
-            Text(uo.origami?.name ?? "Origami")
+            Text(uo.origami?.name.capitalized ?? "Origami")
                 .oruSectionTitle()
 
-            Text("Completado el \(uo.completionDate?.formatted(.dateTime.day().month(.wide).year()) ?? "—")")
+            Text("Completado el \(uo.completionDate?.formatted(.dateTime.day().month(.wide).year().locale(Locale(identifier: "es_ES"))) ?? "—")")
                 .oruTextSecondary()
 
             Spacer()
@@ -580,19 +579,38 @@ private struct StatsPreview: View {
         }
     }
 
+    private struct OrigamiSeed {
+        let name: String
+        let phases: Int
+        let daysAgo: Int
+    }
+
     private static func insertOrigamis(into context: ModelContext) {
         let cal = Calendar.current
-        let names = ["Grulla", "Rana", "Mariposa"]
-        let daysAgo = [45, 20, 5]
+        let catalog: [OrigamiSeed] = [
+            OrigamiSeed(name: "mariposa", phases: 5, daysAgo: 45),
+            OrigamiSeed(name: "luna", phases: 6, daysAgo: 20),
+            OrigamiSeed(name: "flor", phases: 6, daysAgo: 5)
+        ]
 
-        for (name, ago) in zip(names, daysAgo) {
-            let origami = Origami(name: name, numberOfPhases: 5)
+        for entry in catalog {
+            let origami = Origami(name: entry.name, numberOfPhases: entry.phases)
             context.insert(origami)
+            for phase in 0..<entry.phases {
+                let op = OrigamiPhase(
+                    phaseNumber: phase,
+                    illustrationName: "\(entry.name)_fase\(phase)"
+                )
+                op.origami = origami
+                context.insert(op)
+            }
 
             let uo = UserOrigami()
             uo.origami = origami
             uo.completed = true
-            uo.completionDate = cal.date(byAdding: .day, value: -ago, to: .now)
+            uo.revealedPhase = entry.phases - 1
+            uo.progressPercentage = 100
+            uo.completionDate = cal.date(byAdding: .day, value: -entry.daysAgo, to: .now)
             context.insert(uo)
         }
     }

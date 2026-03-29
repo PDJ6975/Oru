@@ -23,4 +23,10 @@ final class UserOrigami {
         self.completionDate = completionDate
         self.progressPercentage = progressPercentage
     }
+
+    var lastPhaseIllustration: String? {
+        origami?.phases
+            .sorted { $0.phaseNumber < $1.phaseNumber }
+            .last?.illustrationName
+    }
 }

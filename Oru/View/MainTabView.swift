@@ -74,16 +74,27 @@ private struct MainTabPreview: View {
         let user = User(name: "Antonio")
         context.insert(user)
 
-        let origami = Origami(name: "mariposa", numberOfPhases: 5)
-        context.insert(origami)
-        for phase in 0..<5 {
-            let op = OrigamiPhase(phaseNumber: phase, illustrationName: "bailarina_fase5")
-            op.origami = origami
+        let mariposa = Origami(name: "flor", numberOfPhases: 5)
+        context.insert(mariposa)
+        for phase in 0..<6 {
+            let op = OrigamiPhase(phaseNumber: phase, illustrationName: "flor_fase\(phase)")
+            op.origami = mariposa
             context.insert(op)
         }
+
+        let luna = Origami(name: "luna", numberOfPhases: 6)
+        context.insert(luna)
+        for phase in 0..<6 {
+            let op = OrigamiPhase(phaseNumber: phase, illustrationName: "luna_fase\(phase)")
+            op.origami = luna
+            context.insert(op)
+        }
+
         let uo = UserOrigami()
         uo.user = user
-        uo.origami = origami
+        uo.origami = mariposa
+        uo.revealedPhase = 5
+        uo.progressPercentage = 100
         context.insert(uo)
     }
 
