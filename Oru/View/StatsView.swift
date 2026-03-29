@@ -239,6 +239,7 @@ struct StatsView: View {
                     .oruTextSecondary()
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .glassEffect(.regular, in: .rect(cornerRadius: 14))
