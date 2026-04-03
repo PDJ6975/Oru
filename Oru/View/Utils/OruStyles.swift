@@ -260,6 +260,28 @@ private struct OruPulseModifier: ViewModifier {
     }
 }
 
+// MARK: - Timer Display
+
+private struct OruTimerDisplayModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 65, weight: .light, design: .rounded))
+            .tracking(2)
+            .monospacedDigit()
+            .foregroundStyle(.secondary)
+    }
+}
+
+// MARK: - Icon Button
+
+private struct OruIconButtonModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.system(size: 20, weight: .regular))
+            .foregroundStyle(.secondary)
+    }
+}
+
 // MARK: - View Extension
 
 extension View {
@@ -345,6 +367,14 @@ extension View {
 
     func oruPulse(scale: CGFloat = 1.25, action: @escaping () -> Void) -> some View {
         modifier(OruPulseModifier(scale: scale, action: action))
+    }
+
+    func oruTimerDisplay() -> some View {
+        modifier(OruTimerDisplayModifier())
+    }
+
+    func oruIconButton() -> some View {
+        modifier(OruIconButtonModifier())
     }
 
     func oruConsolidationCard(progress: Double) -> some View {

@@ -2,62 +2,103 @@ import SwiftUI
 
 struct TimerView: View {
 
-    @State private var selectedMinutes = 25
+    @State private var viewModel = TimerViewModel()
     @State private var isEditing = false
-
-    private static let stepMinutes = 5
-    private static let minMinutes = 5
-    private static let maxMinutes = 60
+    @State private var showCancelAlert = false
 
     var body: some View {
         VStack(spacing: 0) {
             timerDisplay
 
-            editButton
+            controls
 
             Spacer()
         }
         .padding(.top, 80)
-        .tint(.secondary)
+        .buttonStyle(.plain)
+        .alert("¿Quieres acabar ya la sesión?", isPresented: $showCancelAlert) {
+            Button("Finalizar", role: .destructive) {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    viewModel.cancel()
+                }
+            }
+            Button("Continuar", role: .cancel) { }
+        }
     }
 
     // MARK: - Timer Display
 
     private var timerDisplay: some View {
         HStack(spacing: 15) {
-            stepButton(systemName: "minus", enabled: canDecrease) {
-                selectedMinutes -= Self.stepMinutes
+            stepButton(systemName: "minus", enabled: viewModel.canDecrease) {
+                viewModel.selectedMinutes -= TimerViewModel.stepMinutes
             }
 
-            Text(formattedTime)
-                .font(.system(size: 65, weight: .light, design: .rounded))
-                .tracking(2)
-                .monospacedDigit()
-                .foregroundStyle(.secondary)
+            timerText
 
-            stepButton(systemName: "plus", enabled: canIncrease) {
-                selectedMinutes += Self.stepMinutes
+            stepButton(systemName: "plus", enabled: viewModel.canIncrease) {
+                viewModel.selectedMinutes += TimerViewModel.stepMinutes
             }
         }
-    }
-
-    private var editButton: some View {
-        Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                isEditing.toggle()
-            }
-        } label: {
-            Image(systemName: isEditing ? "checkmark" : "pencil")
-                .font(.system(size: 20, weight: .regular))
-                .foregroundStyle(.secondary)
-                .contentTransition(.symbolEffect(.replace))
-        }
-        .padding(.top, 10)
     }
 
     @ViewBuilder
+    private var timerText: some View {
+        Group {
+            if let interval = viewModel.timerInterval, viewModel.state == .running {
+                Text(timerInterval: interval, countsDown: true, showsHours: false)
+            } else {
+                Text(formattedTime)
+            }
+        }
+        .oruTimerDisplay()
+    }
+
+    // MARK: - Controls
+
+    @ViewBuilder
+    private var controls: some View {
+        if viewModel.state == .running {
+            Button {
+                showCancelAlert = true
+            } label: {
+                Image(systemName: "xmark")
+                    .oruIconButton()
+            }
+            .padding(.top, 10)
+            .transition(.opacity.combined(with: .scale))
+        } else {
+            HStack(spacing: 20) {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        isEditing = false
+                        viewModel.start()
+                    }
+                } label: {
+                    Image(systemName: "play")
+                        .oruIconButton()
+                }
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        isEditing.toggle()
+                    }
+                } label: {
+                    Image(systemName: isEditing ? "checkmark" : "pencil")
+                        .oruIconButton()
+                        .contentTransition(.symbolEffect(.replace))
+                }
+            }
+            .padding(.top, 10)
+            .transition(.opacity)
+        }
+    }
+
+    // MARK: - Step Buttons
+
+    @ViewBuilder
     private func stepButton(systemName: String, enabled: Bool, action: @escaping () -> Void) -> some View {
-        if isEditing {
+        if isEditing && viewModel.state == .idle {
             Button(action: action) {
                 Image(systemName: systemName)
                     .font(.system(size: 20, weight: .medium))
@@ -68,11 +109,8 @@ struct TimerView: View {
         }
     }
 
-    private var canDecrease: Bool { selectedMinutes > Self.minMinutes }
-    private var canIncrease: Bool { selectedMinutes < Self.maxMinutes }
-
     private var formattedTime: String {
-        String(format: "%02d:%02d", selectedMinutes, 0)
+        String(format: "%02d:%02d", viewModel.selectedMinutes, 0)
     }
 }
 
