@@ -30,7 +30,7 @@ struct MainTabView: View {
             }
 
             Tab("Temporizador", systemImage: "timer") {
-                Text("Próximamente")
+                TimerView()
             }
         }
         .tint(Color.oruPrimary)
