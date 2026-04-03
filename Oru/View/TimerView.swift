@@ -11,23 +11,20 @@ struct TimerView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer()
-                .frame(height: 80)
-
             timerDisplay
 
             editButton
 
             Spacer()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.top, 80)
         .tint(.secondary)
     }
 
     // MARK: - Timer Display
 
     private var timerDisplay: some View {
-        HStack(spacing: 24) {
+        HStack(spacing: 15) {
             stepButton(systemName: "minus", enabled: canDecrease) {
                 selectedMinutes -= Self.stepMinutes
             }
