@@ -7,6 +7,7 @@ class StatsViewModel {
     private let repository: HabitRepositoryProtocol
     private let origamiRepository: OrigamiRepositoryProtocol
     private let calendar = Calendar.current
+    private let currentDate: () -> Date
 
     var selectedYear: Int {
         didSet { recomputeMetrics() }
@@ -30,10 +31,15 @@ class StatsViewModel {
     private(set) var completedOrigamis: [UserOrigami] = []
     private var allCompletedOrigamis: [UserOrigami] = []
 
-    init(repository: HabitRepositoryProtocol, origamiRepository: OrigamiRepositoryProtocol) {
+    init(
+        repository: HabitRepositoryProtocol,
+        origamiRepository: OrigamiRepositoryProtocol,
+        currentDate: @escaping () -> Date = { .now }
+    ) {
         self.repository = repository
         self.origamiRepository = origamiRepository
-        self.selectedYear = calendar.component(.year, from: .now)
+        self.currentDate = currentDate
+        self.selectedYear = calendar.component(.year, from: currentDate())
     }
 
     func loadStats() {
@@ -50,7 +56,7 @@ class StatsViewModel {
     }
 
     var availableYears: [Int] {
-        let currentYear = calendar.component(.year, from: .now)
+        let currentYear = calendar.component(.year, from: currentDate())
         guard let earliest = habits.map(\.creationDate).min() else {
             return [currentYear]
         }
@@ -67,7 +73,7 @@ class StatsViewModel {
         let start = calendar.date(from: DateComponents(year: selectedYear)) ?? .now // ej: 1-ene-2026
         let nextYearStart = calendar.date(from: DateComponents(year: selectedYear + 1)) ?? .now // ej: 1-ene-2027
         let lastDayOfYear = calendar.date(byAdding: .day, value: -1, to: nextYearStart) ?? nextYearStart // le restamos un día: 31-dic-2026
-        let today = calendar.startOfDay(for: .now)
+        let today = calendar.startOfDay(for: currentDate())
         return (start, min(today, lastDayOfYear))
     }
 
@@ -117,7 +123,7 @@ class StatsViewModel {
     // today se pasa a los pasos de rachas para que hoy no rompa una racha (el día aún no ha terminado)
     private func recomputeMetrics() {
         let range = yearRange()
-        let today = calendar.startOfDay(for: .now)
+        let today = calendar.startOfDay(for: currentDate())
         let index = buildComplianceIndex(range: range)
         let (daily, accumulators) = computeDayByDay(range: range, index: index, today: today)
         deriveGlobalMetrics(daily: daily, range: range, today: today)

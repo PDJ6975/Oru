@@ -159,18 +159,20 @@ struct StatsGlobalMetricsTests {
 
     // Día sin hábitos programados entre dos perfectos no rompe la racha
     // Hábito solo lun-vie, el fin de semana no cuenta
+    // Fechas fijas: jue 26-mar, vie 27-mar, (sáb-dom), lun 30-mar = "hoy"
     @Test func streak_daysWithoutScheduled() {
-        // Buscar el último viernes y el lunes siguiente
-        var friday = daysAgo(1)
-        while cal.component(.weekday, from: friday) != 6 { // 6 = viernes
-            friday = cal.date(byAdding: .day, value: -1, to: friday)
-                ?? friday
-        }
-        let thursday = cal.date(byAdding: .day, value: -1, to: friday)
-            ?? friday
-        // El lunes siguiente al viernes (2 días después del sábado)
-        let monday = cal.date(byAdding: .day, value: 3, to: friday)
-            ?? friday
+        // swiftlint:disable:next force_unwrapping
+        let monday = cal.date(from: DateComponents(year: 2026, month: 3, day: 30))!
+        // swiftlint:disable:next force_unwrapping
+        let friday = cal.date(byAdding: .day, value: -3, to: monday)!
+        // swiftlint:disable:next force_unwrapping
+        let thursday = cal.date(byAdding: .day, value: -1, to: friday)!
+
+        let fixedVM = StatsViewModel(
+            repository: habitRepo,
+            origamiRepository: origamiRepo,
+            currentDate: { monday }
+        )
 
         let weekdays: [Habit.Weekday] = [
             .monday, .tuesday, .wednesday, .thursday, .friday
@@ -181,24 +183,14 @@ struct StatsGlobalMetricsTests {
                 ?? thursday
         )
 
-        // Jueves y viernes completados
         habit.compliances.append(Compliance(date: thursday, completed: true))
         habit.compliances.append(Compliance(date: friday, completed: true))
+        habit.compliances.append(Compliance(date: monday, completed: true))
 
-        // Sábado y domingo -> no programados, no rompen
-        // Lunes completado (solo si lunes <= hoy)
-        let today = cal.startOfDay(for: .now)
-        if monday <= today {
-            habit.compliances.append(
-                Compliance(date: monday, completed: true)
-            )
-        }
+        fixedVM.loadStats()
 
-        vm.loadStats()
-
-        // La racha debe ser >= 2 (jue+vie) y si lunes ya pasó, 3
-        let expectedStreak = monday <= today ? 3 : 2
-        #expect(vm.currentStreak == expectedStreak)
+        // jue✓ + vie✓ + (sáb-dom no programados) + lun✓(hoy) = racha 3
+        #expect(fixedVM.currentStreak == 3)
     }
 }
 
