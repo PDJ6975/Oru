@@ -14,10 +14,10 @@ struct ContentView: View {
             } else if showNameRegistration {
                 NameRegistrationView(
                     viewModel: WelcomeViewModel(
-                        repository: UserRepository(modelContext: modelContext)
+                        repository: UserRepository(modelContext: modelContext),
+                        origamiRepository: OrigamiRepository(modelContext: modelContext)
                     ),
                     onRegistered: {
-                        assignFirstOrigami()
                         withAnimation {
                             hasCompletedOnboarding = true
                         }
@@ -32,18 +32,6 @@ struct ContentView: View {
                 }
             }
         }
-    }
-
-    private func assignFirstOrigami() {
-        let origamiRepo = OrigamiRepository(modelContext: modelContext)
-        let userRepo = UserRepository(modelContext: modelContext)
-        guard let user = try? userRepo.fetchUser(),
-              let origami = try? origamiRepo.fetchNextOrigami() else { return }
-
-        let userOrigami = UserOrigami()
-        userOrigami.user = user
-        userOrigami.origami = origami
-        try? origamiRepo.addUserOrigami(userOrigami)
     }
 }
 
