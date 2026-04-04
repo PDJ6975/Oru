@@ -18,6 +18,10 @@ struct TimerView: View {
                 habitTrackingCard
                     .padding(.top, 40)
                     .padding(.horizontal, 24)
+
+                notificationCard
+                    .padding(.top, 40)
+                    .padding(.horizontal, 24)
             }
 
             Spacer()
@@ -170,6 +174,33 @@ struct TimerView: View {
             }
             .padding(10)
             .glassEffect(.regular, in: .rect(cornerRadius: 10))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .glassEffect(.regular, in: .rect(cornerRadius: 14))
+    }
+
+    // MARK: - Notification Card
+
+    private var notificationCard: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 20) {
+                Text("No te olvides de las notificaciones")
+                    .font(.system(size: 17, weight: .regular, design: .rounded))
+                    .tracking(0.8)
+                    .foregroundStyle(.secondary)
+
+                Text("Activa las notificaciones para maximizar la experiencia en la aplicación")
+                    .font(.system(size: 15, weight: .regular, design: .rounded))
+                    .lineSpacing(3)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
