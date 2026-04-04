@@ -28,7 +28,6 @@ struct TimerView: View {
         .padding(.top, viewModel.state == .idle ? 80 : 0)
         .toolbarVisibility(viewModel.state == .running ? .hidden : .visible, for: .tabBar)
         .animation(.easeInOut(duration: 0.4), value: viewModel.state)
-        .buttonStyle(.plain)
         .alert("¿Quieres acabar ya la sesión?", isPresented: $showCancelAlert) {
             Button("Finalizar", role: .destructive) {
                 withAnimation(.easeInOut(duration: 0.2)) {
@@ -264,6 +263,7 @@ private struct TimerPreview: View {
     var body: some View {
         TimerView(viewModel: viewModel)
             .modelContainer(container)
+            .oruDefaultTint()
     }
 }
 

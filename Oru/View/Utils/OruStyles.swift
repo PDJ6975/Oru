@@ -381,4 +381,10 @@ extension View {
         self
             .listRowBackground(ConsolidationCardBackground(progress: progress))
     }
+
+    /// Resetea el tint heredado del TabView (.oruPrimary) al color por defecto de controles.
+    /// Necesario porque SwiftUI no ofrece forma de limitar .tint() solo a la tab bar.
+    func oruDefaultTint() -> some View {
+        self.tint(Color.secondary)
+    }
 }

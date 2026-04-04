@@ -15,6 +15,7 @@ struct MainTabView: View {
                 NavigationStack {
                     HomeView(gamificationVM: $gamificationVM)
                 }
+                .oruDefaultTint()
             }
 
             Tab("Hábitos", systemImage: "checklist") {
@@ -23,6 +24,7 @@ struct MainTabView: View {
                         HabitListView(viewModel: habitVM)
                     }
                 }
+                .oruDefaultTint()
             }
 
             Tab("Estadísticas", systemImage: "chart.bar") {
@@ -31,12 +33,16 @@ struct MainTabView: View {
                         StatsView(viewModel: statsVM)
                     }
                 }
+                .oruDefaultTint()
             }
 
             Tab("Temporizador", systemImage: "timer") {
-                if let timerVM {
-                    TimerView(viewModel: timerVM)
+                Group {
+                    if let timerVM {
+                        TimerView(viewModel: timerVM)
+                    }
                 }
+                .oruDefaultTint()
             }
         }
         .tint(Color.oruPrimary)

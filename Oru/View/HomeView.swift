@@ -77,7 +77,6 @@ struct HomeView: View {
                 .animation(.easeIn(duration: 0.5), value: gvm.isOrigamiCompleted)
             }
         }
-        .tint(.primary)
     }
 
     private var breathingActive: Bool {
@@ -267,6 +266,7 @@ private struct HomePreview: View {
             }
         }
         .modelContainer(container)
+        .oruDefaultTint()
     }
 }
 
