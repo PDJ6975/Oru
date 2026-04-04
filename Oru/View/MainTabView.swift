@@ -6,6 +6,8 @@ struct MainTabView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var gamificationVM: GamificationViewModel?
     @State private var habitVM: HabitViewModel?
+    @State private var statsVM: StatsViewModel?
+    @State private var timerVM: TimerViewModel?
 
     var body: some View {
         TabView {
@@ -25,17 +27,16 @@ struct MainTabView: View {
 
             Tab("Estadísticas", systemImage: "chart.bar") {
                 NavigationStack {
-                    StatsView(viewModel: StatsViewModel(
-                        repository: HabitRepository(modelContext: modelContext),
-                        origamiRepository: OrigamiRepository(modelContext: modelContext)
-                    ))
+                    if let statsVM {
+                        StatsView(viewModel: statsVM)
+                    }
                 }
             }
 
             Tab("Temporizador", systemImage: "timer") {
-                TimerView(viewModel: TimerViewModel(
-                    repository: HabitRepository(modelContext: modelContext)
-                ))
+                if let timerVM {
+                    TimerView(viewModel: timerVM)
+                }
             }
         }
         .tint(Color.oruPrimary)
@@ -49,6 +50,17 @@ struct MainTabView: View {
             }
             if habitVM == nil {
                 habitVM = HabitViewModel(
+                    repository: HabitRepository(modelContext: modelContext)
+                )
+            }
+            if statsVM == nil {
+                statsVM = StatsViewModel(
+                    repository: HabitRepository(modelContext: modelContext),
+                    origamiRepository: OrigamiRepository(modelContext: modelContext)
+                )
+            }
+            if timerVM == nil {
+                timerVM = TimerViewModel(
                     repository: HabitRepository(modelContext: modelContext)
                 )
             }

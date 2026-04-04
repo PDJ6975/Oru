@@ -3,7 +3,7 @@ import SwiftUI
 
 struct TimerView: View {
 
-    @State var viewModel: TimerViewModel
+    @Bindable var viewModel: TimerViewModel
     @State private var isEditing = false
     @State private var showCancelAlert = false
     @State private var showHabitInfo = false
