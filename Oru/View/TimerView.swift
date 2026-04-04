@@ -22,11 +22,13 @@ struct TimerView: View {
                 notificationCard
                     .padding(.top, 40)
                     .padding(.horizontal, 24)
-            }
 
-            Spacer()
+                Spacer()
+            }
         }
-        .padding(.top, 80)
+        .frame(maxHeight: .infinity, alignment: viewModel.state == .running ? .center : .top)
+        .padding(.top, viewModel.state == .idle ? 80 : 0)
+        .animation(.easeInOut(duration: 0.8), value: viewModel.state)
         .buttonStyle(.plain)
         .alert("¿Quieres acabar ya la sesión?", isPresented: $showCancelAlert) {
             Button("Finalizar", role: .destructive) {
