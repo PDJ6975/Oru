@@ -6,41 +6,17 @@ class HabitViewModel {
 
     private let repository: HabitRepositoryProtocol
 
-    var habits: [Habit] = []
     var lastError: String?
     var consolidatedHabit: Habit?
 
-    // Callback que notifica cambios de completado: (completado, nHábitosHoy)
-    var onHabitToggled: ((Bool, Int) -> Void)?
-
-    var todayHabits: [Habit] {
-        let today = currentWeekday()
-        return habits.filter { $0.scheduledDays.contains(today) }
-    }
-
-    var otherHabits: [Habit] {
-        let today = currentWeekday()
-        return habits.filter { !$0.scheduledDays.contains(today) }
-    }
-
     init(repository: HabitRepositoryProtocol) {
         self.repository = repository
-    }
-
-    func loadHabits() {
-        do {
-            habits = try repository.fetchAllHabits().filter { $0.status != .archived }
-        } catch {
-            lastError = "No se pudieron cargar los hábitos: \(error.localizedDescription)"
-            habits = []
-        }
     }
     
     // Interruptor de hábitos booleanos
     // Si existe un Compliance en el día actual -> lo invierte
     // Si no existe -> Crea un compliance para hoy como completado
     func toggleBoolean(for habit: Habit) {
-        let wasCompleted = todayCompliance(for: habit)?.completed ?? false
         if let compliance = todayCompliance(for: habit) {
             compliance.completed.toggle()
         } else {
@@ -52,10 +28,6 @@ class HabitViewModel {
                 consolidatedHabit = habit
             }
             try repository.saveChanges()
-            let isNowCompleted = todayCompliance(for: habit)?.completed ?? false
-            if wasCompleted != isNowCompleted {
-                onHabitToggled?(isNowCompleted, todayHabits.count)
-            }
         } catch {
             lastError = "No se pudo guardar el cambio: \(error.localizedDescription)"
         }
@@ -64,7 +36,6 @@ class HabitViewModel {
     // Si la cantidad es 0 y ya existe un compliance, lo elimina
     // Si la cantidad es > 0, crea o actualiza el compliance
     func recordAmount(_ amount: Double, for habit: Habit) {
-        let wasCompleted = todayCompliance(for: habit)?.completed ?? false
         do {
             if amount <= 0 {
                 if let compliance = todayCompliance(for: habit) {
@@ -83,10 +54,6 @@ class HabitViewModel {
                 consolidatedHabit = habit
             }
             try repository.saveChanges()
-            let isNowCompleted = todayCompliance(for: habit)?.completed ?? false
-            if wasCompleted != isNowCompleted {
-                onHabitToggled?(isNowCompleted, todayHabits.count)
-            }
         } catch {
             lastError = "No se pudo registrar la cantidad: \(error.localizedDescription)"
         }
@@ -186,7 +153,6 @@ class HabitViewModel {
     func addHabit(_ habit: Habit) {
         do {
             try repository.addHabit(habit)
-            loadHabits()
         } catch {
             lastError = "No se pudo crear el hábito: \(error.localizedDescription)"
         }
@@ -197,7 +163,6 @@ class HabitViewModel {
         habit.archivedDate = .now
         do {
             try repository.saveChanges()
-            loadHabits()
         } catch {
             lastError = "No se pudo archivar el hábito: \(error.localizedDescription)"
         }
@@ -206,7 +171,6 @@ class HabitViewModel {
     func deleteHabit(_ habit: Habit) {
         do {
             try repository.deleteHabit(habit)
-            loadHabits()
         } catch {
             lastError = "No se pudo eliminar el hábito: \(error.localizedDescription)"
         }
@@ -222,7 +186,6 @@ class HabitViewModel {
         habit.unit = data.unit
         do {
             try repository.saveChanges()
-            loadHabits()
         } catch {
             lastError = "No se pudo actualizar el hábito: \(error.localizedDescription)"
         }

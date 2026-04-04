@@ -68,26 +68,7 @@ struct HabitCreationTests {
 
     // MARK: - Tests
 
-    @Test func loadHabits_filtersArchived() {
-        insertHabit(name: "Activo")
-        insertHabit(name: "Archivado", status: .archived)
-
-        vm.loadHabits()
-
-        #expect(vm.habits.count == 1)
-        #expect(vm.habits.first?.name == "Activo")
-    }
-
-    @Test func loadHabits_includesConsolidated() {
-        insertHabit(name: "Activo")
-        insertHabit(name: "Consolidado", status: .consolidated)
-
-        vm.loadHabits()
-
-        #expect(vm.habits.count == 2)
-    }
-
-    @Test func addHabit_appearsInList() {
+    @Test func addHabit_persistsToRepo() {
         let habit = Habit(
             icon: "🧪", name: "Nuevo",
             type: .boolean, scheduledDays: [.monday]
@@ -95,35 +76,16 @@ struct HabitCreationTests {
 
         vm.addHabit(habit)
 
-        #expect(vm.habits.count == 1)
-        #expect(vm.habits.first?.name == "Nuevo")
+        #expect(repo.habits.count == 1)
+        #expect(repo.habits.first?.name == "Nuevo")
     }
 
-    @Test func deleteHabit_removesFromList() {
+    @Test func deleteHabit_removesFromRepo() {
         let habit = insertHabit(name: "Borrar")
-        vm.loadHabits()
 
         vm.deleteHabit(habit)
 
-        #expect(vm.habits.isEmpty)
-    }
-
-    @Test func todayHabits_filtersCorrectly() {
-        let today = vm.currentWeekday()
-        let otherDay: Habit.Weekday =
-            today == .monday ? .friday : .monday
-
-        insertHabit(name: "Hoy", scheduledDays: [today])
-        insertHabit(
-            name: "Otro día",
-            scheduledDays: [otherDay]
-        )
-        vm.loadHabits()
-
-        #expect(vm.todayHabits.count == 1)
-        #expect(vm.todayHabits.first?.name == "Hoy")
-        #expect(vm.otherHabits.count == 1)
-        #expect(vm.otherHabits.first?.name == "Otro día")
+        #expect(repo.habits.isEmpty)
     }
 }
 
@@ -147,8 +109,6 @@ struct HabitBooleanTests {
             type: .boolean,
             scheduledDays: Habit.Weekday.allCases
         )
-        repo.habits.append(habit)
-        vm.loadHabits()
         return habit
     }
 
@@ -224,8 +184,6 @@ struct HabitAmountTests {
             scheduledDays: Habit.Weekday.allCases,
             dailyGoal: dailyGoal
         )
-        repo.habits.append(habit)
-        vm.loadHabits()
         return habit
     }
 
@@ -376,8 +334,6 @@ struct HabitConsolidationTests {
             )
             habit.compliances.append(compliance)
         }
-        repo.habits.append(habit)
-        vm.loadHabits()
         return habit
     }
 
@@ -424,8 +380,6 @@ struct HabitConsolidationTests {
             type: .boolean,
             scheduledDays: Habit.Weekday.allCases
         )
-        repo.habits.append(habit)
-        vm.loadHabits()
 
         vm.archiveHabit(habit)
 
@@ -433,20 +387,6 @@ struct HabitConsolidationTests {
         #expect(habit.archivedDate != nil)
     }
 
-    @Test func archiveHabit_removesFromList() {
-        let habit = Habit(
-            icon: "🧪", name: "Archivar",
-            type: .boolean,
-            scheduledDays: Habit.Weekday.allCases
-        )
-        repo.habits.append(habit)
-        vm.loadHabits()
-        #expect(vm.habits.count == 1)
-
-        vm.archiveHabit(habit)
-
-        #expect(vm.habits.isEmpty)
-    }
 }
 
 // MARK: - 6. Validación

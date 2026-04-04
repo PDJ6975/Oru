@@ -17,6 +17,7 @@ struct ContentView: View {
                         repository: UserRepository(modelContext: modelContext)
                     ),
                     onRegistered: {
+                        assignFirstOrigami()
                         withAnimation {
                             hasCompletedOnboarding = true
                         }
@@ -31,6 +32,18 @@ struct ContentView: View {
                 }
             }
         }
+    }
+
+    private func assignFirstOrigami() {
+        let origamiRepo = OrigamiRepository(modelContext: modelContext)
+        let userRepo = UserRepository(modelContext: modelContext)
+        guard let user = try? userRepo.fetchUser(),
+              let origami = try? origamiRepo.fetchNextOrigami() else { return }
+
+        let userOrigami = UserOrigami()
+        userOrigami.user = user
+        userOrigami.origami = origami
+        try? origamiRepo.addUserOrigami(userOrigami)
     }
 }
 

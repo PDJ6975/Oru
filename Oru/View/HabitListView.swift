@@ -4,10 +4,22 @@ import SwiftData
 struct HabitListView: View {
 
     var viewModel: HabitViewModel
-    @Environment(\.modelContext) private var modelContext
     @State private var showCreateForm = false
     @State private var habitToEdit: Habit?
     @State private var habitToDelete: Habit?
+
+    @Query(sort: \Habit.creationDate, order: .reverse)
+    private var allHabits: [Habit]
+
+    private var todayHabits: [Habit] {
+        let today = viewModel.currentWeekday()
+        return allHabits.filter { $0.status != .archived && $0.scheduledDays.contains(today) }
+    }
+
+    private var otherHabits: [Habit] {
+        let today = viewModel.currentWeekday()
+        return allHabits.filter { $0.status != .archived && !$0.scheduledDays.contains(today) }
+    }
 
     private func todayFormatted() -> String {
         let formatter = DateFormatter()
@@ -17,7 +29,7 @@ struct HabitListView: View {
     }
 
     private var hasNoHabits: Bool {
-        viewModel.todayHabits.isEmpty && viewModel.otherHabits.isEmpty
+        todayHabits.isEmpty && otherHabits.isEmpty
     }
 
     var body: some View {
@@ -86,9 +98,6 @@ struct HabitListView: View {
                 Text("\(intro) \(detail)")
             }
         }
-        .onAppear {
-            viewModel.loadHabits()
-        }
     }
 
     private var emptyStateView: some View {
@@ -107,10 +116,10 @@ struct HabitListView: View {
     private var habitListView: some View {
         List {
             Section("Para hoy") {
-                if viewModel.todayHabits.isEmpty {
+                if todayHabits.isEmpty {
                     todayEmptyRow
                 } else {
-                    ForEach(viewModel.todayHabits) { habit in
+                    ForEach(todayHabits) { habit in
                         TodayHabitRow(habit: habit, viewModel: viewModel)
                             .oruConsolidationCard(progress: viewModel.consolidationProgress(for: habit))
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
@@ -139,9 +148,9 @@ struct HabitListView: View {
                 }
             }
 
-            if !viewModel.otherHabits.isEmpty {
+            if !otherHabits.isEmpty {
                 Section("En pausa") {
-                    ForEach(viewModel.otherHabits) { habit in
+                    ForEach(otherHabits) { habit in
                         HabitRow(habit: habit, today: viewModel.currentWeekday())
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button {
@@ -253,7 +262,7 @@ private struct QuantityHabitRow: View {
 
     let habit: Habit
     var viewModel: HabitViewModel
-    
+
     // Decide si el campo de texto para escribir cantidad se muestra
     @State private var isEntering = false
     // Guarda temporalmente lo que escribe el usuario en el teclado

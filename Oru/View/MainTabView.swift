@@ -5,6 +5,7 @@ struct MainTabView: View {
 
     @Environment(\.modelContext) private var modelContext
     @State private var gamificationVM: GamificationViewModel?
+    @State private var habitVM: HabitViewModel?
 
     var body: some View {
         TabView {
@@ -16,7 +17,9 @@ struct MainTabView: View {
 
             Tab("Hábitos", systemImage: "checklist") {
                 NavigationStack {
-                    makeHabitListView()
+                    if let habitVM {
+                        HabitListView(viewModel: habitVM)
+                    }
                 }
             }
 
@@ -44,18 +47,12 @@ struct MainTabView: View {
                 gvm.loadOrigami()
                 gamificationVM = gvm
             }
+            if habitVM == nil {
+                habitVM = HabitViewModel(
+                    repository: HabitRepository(modelContext: modelContext)
+                )
+            }
         }
-    }
-
-    private func makeHabitListView() -> HabitListView {
-        let hvm = HabitViewModel(
-            repository: HabitRepository(modelContext: modelContext)
-        )
-        let gvm = gamificationVM
-        hvm.onHabitToggled = { completed, count in
-            gvm?.habitToggled(completed: completed, todayHabitCount: count)
-        }
-        return HabitListView(viewModel: hvm)
     }
 }
 
