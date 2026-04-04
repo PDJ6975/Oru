@@ -45,6 +45,7 @@ class TimerViewModel {
         let end = now.addingTimeInterval(Double(selectedMinutes * 60))
         timerInterval = now...end
         state = .running
+        UIApplication.shared.isIdleTimerDisabled = true
 
         timerTask = Task {
             try? await Task.sleep(for: .seconds(selectedMinutes * 60))
@@ -55,18 +56,21 @@ class TimerViewModel {
 
     func cancel() {
         timerTask?.cancel()
-        timerTask = nil
-        timerInterval = nil
-        state = .idle
+        resetSession()
     }
 
     private func finish() {
         if trackHabit, let habit = selectedHabit {
             recordSession(for: habit)
         }
+        resetSession()
+    }
+
+    private func resetSession() {
         timerTask = nil
         timerInterval = nil
         state = .idle
+        UIApplication.shared.isIdleTimerDisabled = false
     }
 
     private func recordSession(for habit: Habit) {
