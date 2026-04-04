@@ -30,7 +30,9 @@ struct MainTabView: View {
             }
 
             Tab("Temporizador", systemImage: "timer") {
-                TimerView()
+                TimerView(viewModel: TimerViewModel(
+                    repository: HabitRepository(modelContext: modelContext)
+                ))
             }
         }
         .tint(Color.oruPrimary)

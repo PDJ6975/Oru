@@ -1,16 +1,24 @@
+import SwiftData
 import SwiftUI
 
 struct TimerView: View {
 
-    @State private var viewModel = TimerViewModel()
+    @State var viewModel: TimerViewModel
     @State private var isEditing = false
     @State private var showCancelAlert = false
+    @State private var showHabitInfo = false
 
     var body: some View {
         VStack(spacing: 0) {
             timerDisplay
 
             controls
+
+            if viewModel.state == .idle {
+                habitTrackingCard
+                    .padding(.top, 40)
+                    .padding(.horizontal, 24)
+            }
 
             Spacer()
         }
@@ -23,6 +31,9 @@ struct TimerView: View {
                 }
             }
             Button("Continuar", role: .cancel) { }
+        }
+        .task {
+            viewModel.loadCompatibleHabits()
         }
     }
 
@@ -42,7 +53,6 @@ struct TimerView: View {
         }
     }
 
-    @ViewBuilder
     private var timerText: some View {
         Group {
             if let interval = viewModel.timerInterval, viewModel.state == .running {
@@ -94,6 +104,78 @@ struct TimerView: View {
         }
     }
 
+    // MARK: - Habit Tracking Card
+
+    private var habitTrackingCard: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            Toggle(isOn: $viewModel.trackHabit) {
+                Text("Registrar tiempo de la sesión:")
+                    .font(.system(size: 17, weight: .regular, design: .rounded))
+                    .tracking(0.8)
+                    .foregroundStyle(.secondary)
+            }
+
+            HStack(spacing: 10) {
+                Menu {
+                    Button {
+                        viewModel.selectedHabit = nil
+                    } label: {
+                        Text("Ninguno")
+                    }
+                    ForEach(viewModel.compatibleHabits) { habit in
+                        Button {
+                            viewModel.selectedHabit = habit
+                        } label: {
+                            Text("\(habit.icon) \(habit.name)")
+                        }
+                    }
+                } label: {
+                    HStack {
+                        if let habit = viewModel.selectedHabit {
+                            Text("\(habit.icon) \(habit.name)")
+                                .oruTextPrimary()
+                        } else {
+                            Text("Selecciona uno de tus hábitos")
+                                .oruInputSmall()
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .disabled(!viewModel.trackHabit)
+                .opacity(viewModel.trackHabit ? 1 : 0.4)
+
+                Divider()
+                    .frame(height: 28)
+
+                Button { showHabitInfo.toggle() } label: {
+                    Image(systemName: "questionmark")
+                        .font(.system(size: 13))
+                        .foregroundStyle(Color.oruPrimary)
+                        .padding(4)
+                }
+                .glassEffect(.regular.tint(.white), in: .circle)
+                .popover(isPresented: $showHabitInfo, arrowEdge: .top) {
+                    Text("💡Solo aparecerán hábitos activos de cantidad"
+                         + " con unidad de tiempo (min,h).")
+                        .oruTip()
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(width: 260)
+                        .padding()
+                        .presentationCompactAdaptation(.popover)
+                }
+            }
+            .padding(10)
+            .glassEffect(.regular, in: .rect(cornerRadius: 10))
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .glassEffect(.regular, in: .rect(cornerRadius: 14))
+    }
+
     // MARK: - Step Buttons
 
     @ViewBuilder
@@ -114,6 +196,45 @@ struct TimerView: View {
     }
 }
 
+// MARK: - Preview
+
+private struct TimerPreview: View {
+    @State private var viewModel: TimerViewModel
+
+    let container: ModelContainer
+
+    init() {
+        let schema = Schema([
+            User.self, Habit.self, Unit.self, Compliance.self,
+            Origami.self, UserOrigami.self, OrigamiPhase.self, Quote.self
+        ])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        // swiftlint:disable:next force_try
+        let container = try! ModelContainer(for: schema, configurations: [config])
+        self.container = container
+
+        let context = container.mainContext
+        let min = Unit(name: "min")
+        context.insert(min)
+
+        let meditar = Habit(
+            icon: "🧘🏼", name: "Meditar", type: .quantity,
+            scheduledDays: Habit.Weekday.allCases, dailyGoal: 15
+        )
+        meditar.unit = min
+        context.insert(meditar)
+        try? context.save()
+
+        let repository = HabitRepository(modelContext: context)
+        _viewModel = State(initialValue: TimerViewModel(repository: repository))
+    }
+
+    var body: some View {
+        TimerView(viewModel: viewModel)
+            .modelContainer(container)
+    }
+}
+
 #Preview {
-    TimerView()
+    TimerPreview()
 }

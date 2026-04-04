@@ -12,6 +12,11 @@ class TimerViewModel {
     private(set) var timerInterval: ClosedRange<Date>?
     var selectedMinutes = 25
 
+    var trackHabit = false
+    var selectedHabit: Habit?
+    private(set) var compatibleHabits: [Habit] = []
+
+    private let repository: HabitRepositoryProtocol
     private var timerTask: Task<Void, Never>?
 
     static let stepMinutes = 5
@@ -20,6 +25,19 @@ class TimerViewModel {
 
     var canDecrease: Bool { selectedMinutes > Self.minMinutes }
     var canIncrease: Bool { selectedMinutes < Self.maxMinutes }
+
+    init(repository: HabitRepositoryProtocol) {
+        self.repository = repository
+    }
+
+    func loadCompatibleHabits() {
+        do {
+            let active = try repository.fetchActiveHabits()
+            compatibleHabits = active.filter { $0.type == .quantity && ($0.unit?.isTimeUnit ?? false) }
+        } catch {
+            compatibleHabits = []
+        }
+    }
 
     func start() {
         let now = Date.now

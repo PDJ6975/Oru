@@ -53,12 +53,8 @@ final class HabitRepository: HabitRepositoryProtocol {
     }
 
     func fetchActiveHabits() throws -> [Habit] {
-        let activeRaw = Habit.HabitStatus.active.rawValue
-        let descriptor = FetchDescriptor<Habit>(
-            predicate: #Predicate { $0.status.rawValue == activeRaw },
-            sortBy: [SortDescriptor(\.creationDate, order: .reverse)]
-        )
-        return try modelContext.fetch(descriptor)
+        let all = try fetchAllHabits()
+        return all.filter { $0.status == .active }
     }
 
     func addHabit(_ habit: Habit) throws {

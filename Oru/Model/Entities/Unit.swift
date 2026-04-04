@@ -20,4 +20,7 @@ extension Unit {
     static let defaultName = "uds"
     static let maxNameLength = 6
     static let maxCustomCount = 20
+    static let timeUnitNames: Set<String> = ["min", "h"]
+
+    var isTimeUnit: Bool { Self.timeUnitNames.contains(name) }
 }
