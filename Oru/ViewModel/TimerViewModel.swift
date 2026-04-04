@@ -16,6 +16,7 @@ class TimerViewModel {
     var selectedHabit: Habit?
     private(set) var compatibleHabits: [Habit] = []
 
+    var lastError: String?
     private let repository: HabitRepositoryProtocol
     private var timerTask: Task<Void, Never>?
 
@@ -60,8 +61,38 @@ class TimerViewModel {
     }
 
     private func finish() {
+        if trackHabit, let habit = selectedHabit {
+            recordSession(for: habit)
+        }
         timerTask = nil
         timerInterval = nil
         state = .idle
+    }
+
+    private func recordSession(for habit: Habit) {
+        let sessionMinutes = Double(selectedMinutes)
+        let amount = habit.unit?.name == "h" ? sessionMinutes / 60.0 : sessionMinutes
+
+        let todayCompliance = habit.compliances.first {
+            Calendar.current.isDateInToday($0.date)
+        }
+
+        if let compliance = todayCompliance {
+            let accumulated = (compliance.recordedAmount ?? 0) + amount
+            compliance.recordedAmount = accumulated
+            compliance.completed = habit.isGoalMet(accumulated)
+        } else {
+            let completed = habit.isGoalMet(amount)
+            let compliance = Compliance(date: .now, completed: completed, recordedAmount: amount)
+            habit.compliances.append(compliance)
+        }
+
+        habit.updateConsolidationStatus()
+
+        do {
+            try repository.saveChanges()
+        } catch {
+            lastError = "No se pudo registrar la sesión: \(error.localizedDescription)"
+        }
     }
 }

@@ -87,4 +87,26 @@ extension Habit {
     static let maxNameLength = 20
     static let maxGoalLength = 5
     static let maxNoteLength = 200
+    static let consolidationThreshold = 66
+
+    func isGoalMet(_ amount: Double) -> Bool {
+        if let goal = dailyGoal {
+            return amount >= goal
+        }
+        return amount > 0
+    }
+
+    // Actualiza el estado según los días completados.
+    // Devuelve `true` si el hábito acaba de consolidarse.
+    @discardableResult
+    func updateConsolidationStatus() -> Bool {
+        let completedDays = compliances.filter(\.completed).count
+        if completedDays >= Self.consolidationThreshold, status == .active {
+            status = .consolidated
+            return true
+        } else if completedDays < Self.consolidationThreshold, status == .consolidated {
+            status = .active
+        }
+        return false
+    }
 }

@@ -48,8 +48,10 @@ class HabitViewModel {
             habit.compliances.append(compliance)
         }
         do {
+            if habit.updateConsolidationStatus() {
+                consolidatedHabit = habit
+            }
             try repository.saveChanges()
-            checkConsolidation(for: habit)
             let isNowCompleted = todayCompliance(for: habit)?.completed ?? false
             if wasCompleted != isNowCompleted {
                 onHabitToggled?(isNowCompleted, todayHabits.count)
@@ -71,14 +73,16 @@ class HabitViewModel {
                 }
             } else if let compliance = todayCompliance(for: habit) {
                 compliance.recordedAmount = amount
-                compliance.completed = isGoalMet(amount, for: habit)
+                compliance.completed = habit.isGoalMet(amount)
             } else {
-                let completed = isGoalMet(amount, for: habit)
+                let completed = habit.isGoalMet(amount)
                 let compliance = Compliance(date: .now, completed: completed, recordedAmount: amount)
                 habit.compliances.append(compliance)
             }
+            if habit.updateConsolidationStatus() {
+                consolidatedHabit = habit
+            }
             try repository.saveChanges()
-            checkConsolidation(for: habit)
             let isNowCompleted = todayCompliance(for: habit)?.completed ?? false
             if wasCompleted != isNowCompleted {
                 onHabitToggled?(isNowCompleted, todayHabits.count)
@@ -87,41 +91,13 @@ class HabitViewModel {
             lastError = "No se pudo registrar la cantidad: \(error.localizedDescription)"
         }
     }
-    // Evalúa si la cantidad registrada alcanza el objetivo diario
-    // Sin objetivo definido, cualquier cantidad > 0 se considera completado
-    func isGoalMet(_ amount: Double, for habit: Habit) -> Bool {
-        if let goal = habit.dailyGoal {
-            return amount >= goal
-        }
-        return amount > 0
-    }
-
-    // Devuelve si existe un registro de cumplimiento para un hábito en el día actual
     func todayCompliance(for habit: Habit) -> Compliance? {
-        // isDateInToday ignora las horas de la fecha para asegurar un solo registro
         habit.compliances.first { Calendar.current.isDateInToday($0.date) }
     }
-    
-    // Calcula el progreso de consolidación (0.0 a 1.0) basado en días completados / 66
+
     func consolidationProgress(for habit: Habit) -> Double {
         let completedDays = habit.compliances.filter(\.completed).count
-        return min(Double(completedDays) / 66.0, 1.0)
-    }
-
-    // Detecta si el hábito acaba de alcanzar o perder los 66 días completados
-    private func checkConsolidation(for habit: Habit) {
-        let completedDays = habit.compliances.filter(\.completed).count
-        if completedDays >= 66, habit.status == .active {
-            habit.status = .consolidated
-            consolidatedHabit = habit
-        } else if completedDays < 66, habit.status == .consolidated {
-            habit.status = .active
-        }
-        do {
-            try repository.saveChanges()
-        } catch {
-            lastError = "No se pudo actualizar el estado del hábito: \(error.localizedDescription)"
-        }
+        return min(Double(completedDays) / Double(Habit.consolidationThreshold), 1.0)
     }
 
     func currentWeekday() -> Habit.Weekday {

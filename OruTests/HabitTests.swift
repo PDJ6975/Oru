@@ -262,13 +262,13 @@ struct HabitAmountTests {
     @Test func isGoalMet_withGoal_belowTarget() {
         let habit = makeQuantityHabit(dailyGoal: 5)
 
-        #expect(vm.isGoalMet(3, for: habit) == false)
+        #expect(habit.isGoalMet(3) == false)
     }
 
     @Test func isGoalMet_withGoal_meetsTarget() {
         let habit = makeQuantityHabit(dailyGoal: 5)
 
-        #expect(vm.isGoalMet(5, for: habit) == true)
+        #expect(habit.isGoalMet(5) == true)
     }
 }
 
