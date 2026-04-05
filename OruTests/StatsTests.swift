@@ -2,27 +2,6 @@ import Testing
 import Foundation
 @testable import Oru
 
-// MARK: - Mock de OrigamiRepository
-
-@MainActor
-final class MockOrigamiRepository: OrigamiRepositoryProtocol {
-    var userOrigamis: [UserOrigami] = []
-
-    func fetchNextOrigami() throws -> Origami? { nil }
-    func fetchPhases(for origami: Origami) throws -> [OrigamiPhase] { [] }
-    func fetchCurrentUserOrigami() throws -> UserOrigami? {
-        userOrigamis.first { !$0.completed }
-    }
-    func fetchCompletedOrigamis() throws -> [UserOrigami] {
-        userOrigamis.filter(\.completed)
-    }
-    func addUserOrigami(_ userOrigami: UserOrigami) throws {
-        userOrigamis.append(userOrigami)
-    }
-    func seedOrigamisIfNeeded() throws {}
-    func saveChanges() throws {}
-}
-
 // MARK: - 1. Métricas globales
 
 @MainActor

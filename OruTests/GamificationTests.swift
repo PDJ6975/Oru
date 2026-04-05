@@ -2,38 +2,6 @@ import Testing
 import Foundation
 @testable import Oru
 
-// MARK: - Mock
-
-@MainActor
-final class GamificationMockRepository: OrigamiRepositoryProtocol {
-    var userOrigamis: [UserOrigami] = []
-    var origamis: [Origami] = []
-
-    func fetchNextOrigami() throws -> Origami? {
-        let assignedNames = Set(userOrigamis.compactMap { $0.origami?.name })
-        return origamis.first { !assignedNames.contains($0.name) }
-    }
-
-    func fetchPhases(for origami: Origami) throws -> [OrigamiPhase] {
-        origami.phases.sorted { $0.phaseNumber < $1.phaseNumber }
-    }
-
-    func fetchCurrentUserOrigami() throws -> UserOrigami? {
-        userOrigamis.first { !$0.completed }
-    }
-
-    func fetchCompletedOrigamis() throws -> [UserOrigami] {
-        userOrigamis.filter(\.completed)
-    }
-
-    func addUserOrigami(_ userOrigami: UserOrigami) throws {
-        userOrigamis.append(userOrigami)
-    }
-
-    func seedOrigamisIfNeeded() throws {}
-    func saveChanges() throws {}
-}
-
 // MARK: - Helpers
 
 @MainActor
@@ -53,9 +21,9 @@ private func makeVM(
     phases: Int = 5,
     progress: Double = 0,
     revealedPhase: Int = 0,
-    repo: GamificationMockRepository? = nil
-) -> (GamificationViewModel, GamificationMockRepository) {
-    let repo = repo ?? GamificationMockRepository()
+    repo: MockOrigamiRepository? = nil
+) -> (GamificationViewModel, MockOrigamiRepository) {
+    let repo = repo ?? MockOrigamiRepository()
     let origami = makeOrigami(name: origamiName, phases: phases)
     repo.origamis.append(origami)
 
@@ -224,7 +192,7 @@ struct AssignmentTests {
 
     // Marca completado con fecha
     @Test func completeAndAssignNext_marksCompleted() {
-        let repo = GamificationMockRepository()
+        let repo = MockOrigamiRepository()
         let luna = makeOrigami(name: "luna", phases: 6)
         repo.origamis.append(luna)
 
@@ -239,7 +207,7 @@ struct AssignmentTests {
 
     // Asigna un nuevo UserOrigami
     @Test func completeAndAssignNext_assignsNewOrigami() {
-        let repo = GamificationMockRepository()
+        let repo = MockOrigamiRepository()
         let luna = makeOrigami(name: "luna", phases: 6)
         repo.origamis.append(luna)
 
@@ -254,7 +222,7 @@ struct AssignmentTests {
 
     // Nuevo origami empieza en 0% y fase 0
     @Test func completeAndAssignNext_resetsProgress() {
-        let repo = GamificationMockRepository()
+        let repo = MockOrigamiRepository()
         let luna = makeOrigami(name: "luna", phases: 6)
         repo.origamis.append(luna)
 
@@ -277,7 +245,7 @@ struct AssignmentTests {
 
     // El nuevo origami no es uno que el usuario ya tenga
     @Test func completeAndAssignNext_doesNotAssignAlreadyOwned() {
-        let repo = GamificationMockRepository()
+        let repo = MockOrigamiRepository()
         let luna = makeOrigami(name: "luna", phases: 6)
         let flor = makeOrigami(name: "flor", phases: 6)
         repo.origamis.append(luna)
@@ -301,7 +269,7 @@ struct LoadTests {
 
     // Carga el UserOrigami no completado
     @Test func loadOrigami_setsCurrentOrigami() {
-        let repo = GamificationMockRepository()
+        let repo = MockOrigamiRepository()
         let origami = makeOrigami(name: "mariposa", phases: 5)
         repo.origamis.append(origami)
 
