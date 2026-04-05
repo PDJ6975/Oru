@@ -65,9 +65,10 @@ struct MainTabView: View {
                     origamiRepository: OrigamiRepository(modelContext: modelContext)
                 )
             }
-            if timerVM == nil {
+            if timerVM == nil, let habitVM {
                 let tvm = TimerViewModel(
-                    repository: HabitRepository(modelContext: modelContext)
+                    repository: HabitRepository(modelContext: modelContext),
+                    habitVM: habitVM
                 )
                 tvm.onSessionCompleted = { [weak gamificationVM] minutes in
                     gamificationVM?.applySessionBonus(durationMinutes: minutes)

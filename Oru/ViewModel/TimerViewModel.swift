@@ -19,8 +19,8 @@ class TimerViewModel {
     private(set) var compatibleHabits: [Habit] = []
 
     var onSessionCompleted: ((Int) -> Void)?
-    var lastError: String?
     private let repository: HabitRepositoryProtocol
+    private let habitVM: HabitViewModel
     private var timerTask: Task<Void, Never>?
     private var currentActivity: Activity<OruTimerAttributes>?
     private var widgetCancelObserver: Any?
@@ -34,8 +34,9 @@ class TimerViewModel {
 
     private static let logger = Logger(subsystem: "com.antoniorodriguez.Oru2026", category: "LiveActivity")
 
-    init(repository: HabitRepositoryProtocol) {
+    init(repository: HabitRepositoryProtocol, habitVM: HabitViewModel) {
         self.repository = repository
+        self.habitVM = habitVM
         widgetCancelObserver = NotificationCenter.default.addObserver(
             forName: .timerCancelledFromWidget,
             object: nil,
@@ -182,30 +183,10 @@ class TimerViewModel {
 
     // MARK: - Registro
 
-    private func recordSession(for habit: Habit) {
+    func recordSession(for habit: Habit) {
         let sessionMinutes = Double(selectedMinutes)
         let amount = habit.unit?.name == "h" ? sessionMinutes / 60.0 : sessionMinutes
-
-        let todayCompliance = habit.compliances.first {
-            Calendar.current.isDateInToday($0.date)
-        }
-
-        if let compliance = todayCompliance {
-            let accumulated = (compliance.recordedAmount ?? 0) + amount
-            compliance.recordedAmount = accumulated
-            compliance.completed = habit.isGoalMet(accumulated)
-        } else {
-            let completed = habit.isGoalMet(amount)
-            let compliance = Compliance(date: .now, completed: completed, recordedAmount: amount)
-            habit.compliances.append(compliance)
-        }
-
-        habit.updateConsolidationStatus()
-
-        do {
-            try repository.saveChanges()
-        } catch {
-            lastError = "No se pudo registrar la sesión: \(error.localizedDescription)"
-        }
+        let existing = habitVM.todayCompliance(for: habit)?.recordedAmount ?? 0
+        habitVM.recordAmount(existing + amount, for: habit)
     }
 }

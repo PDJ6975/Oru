@@ -231,5 +231,6 @@ struct TimerView: View {
 
 #Preview(traits: .sampleData) {
     @Previewable @Environment(\.modelContext) var context
-    TimerView(viewModel: TimerViewModel(repository: HabitRepository(modelContext: context)))
+    let repo = HabitRepository(modelContext: context)
+    TimerView(viewModel: TimerViewModel(repository: repo, habitVM: HabitViewModel(repository: repo)))
 }
