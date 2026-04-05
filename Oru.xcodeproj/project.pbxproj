@@ -7,15 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3B15ED532F82738C004694AA /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B15ED522F82738C004694AA /* WidgetKit.framework */; };
+		3B15ED552F82738D004694AA /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B15ED542F82738D004694AA /* SwiftUI.framework */; };
+		3B15ED642F82738E004694AA /* OruTimerWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3B15ED502F82738C004694AA /* OruTimerWidgetExtension.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3B33C4902F561222007880A3 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 3B33C48F2F561222007880A3 /* .gitignore */; };
 		3B33C4962F56124C007880A3 /* sonar-project.properties in Resources */ = {isa = PBXBuildFile; fileRef = 3B33C4952F56124C007880A3 /* sonar-project.properties */; };
 		3B33C4972F56124C007880A3 /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = 3B33C4942F56124C007880A3 /* .swiftlint.yml */; };
 		3B33C4982F56124C007880A3 /* ci.yml in Resources */ = {isa = PBXBuildFile; fileRef = 3B33C4912F56124C007880A3 /* ci.yml */; };
-		3B4E98BC2F5AD4C900394045 /* CLAUDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 3B4E98872F5AD4C900394045 /* CLAUDE.md */; };
 		3B7971AF2F56E17800BE27D3 /* cd.yml in Resources */ = {isa = PBXBuildFile; fileRef = 3B7971AE2F56E17800BE27D3 /* cd.yml */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		3B15ED622F82738E004694AA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3BC17C2F2F543B7D009DD857 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3B15ED4F2F82738C004694AA;
+			remoteInfo = OruTimerWidgetExtension;
+		};
 		3BC17C472F543B7E009DD857 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3BC17C2F2F543B7D009DD857 /* Project object */;
@@ -25,21 +34,67 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		3B15ED652F82738E004694AA /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				3B15ED642F82738E004694AA /* OruTimerWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		3B0058EE2F6EC36700BAA9FB /* Oru.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = Oru.xcodeproj; sourceTree = "<group>"; };
+		3B15ED502F82738C004694AA /* OruTimerWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = OruTimerWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		3B15ED522F82738C004694AA /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		3B15ED542F82738D004694AA /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		3B33C48F2F561222007880A3 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		3B33C4912F56124C007880A3 /* ci.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = ci.yml; sourceTree = "<group>"; };
 		3B33C4942F56124C007880A3 /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 		3B33C4952F56124C007880A3 /* sonar-project.properties */ = {isa = PBXFileReference; lastKnownFileType = text; path = "sonar-project.properties"; sourceTree = "<group>"; };
-		3B4E98872F5AD4C900394045 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
 		3B7971AE2F56E17800BE27D3 /* cd.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = cd.yml; sourceTree = "<group>"; };
 		3BC17C372F543B7D009DD857 /* Oru.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Oru.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3BC17C462F543B7E009DD857 /* OruTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OruTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		3B15ED682F82738E004694AA /* Exceptions for "OruTimerWidget" folder in "OruTimerWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 3B15ED4F2F82738C004694AA /* OruTimerWidgetExtension */;
+		};
+		3B15EDA02F82739A004694AA /* Exceptions for "Oru" folder in "OruTimerWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Model/LiveActivity/CancelTimerIntent.swift,
+				Model/LiveActivity/OruTimerAttributes.swift,
+				Model/LiveActivity/PendingSessionStore.swift,
+			);
+			target = 3B15ED4F2F82738C004694AA /* OruTimerWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		3B15ED562F82738D004694AA /* OruTimerWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3B15ED682F82738E004694AA /* Exceptions for "OruTimerWidget" folder in "OruTimerWidgetExtension" target */,
+			);
+			path = OruTimerWidget;
+			sourceTree = "<group>";
+		};
 		3BC17C392F543B7D009DD857 /* Oru */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3B15EDA02F82739A004694AA /* Exceptions for "Oru" folder in "OruTimerWidgetExtension" target */,
+			);
 			path = Oru;
 			sourceTree = "<group>";
 		};
@@ -51,6 +106,15 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3B15ED4D2F82738C004694AA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3B15ED552F82738D004694AA /* SwiftUI.framework in Frameworks */,
+				3B15ED532F82738C004694AA /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3BC17C342F543B7D009DD857 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -71,6 +135,15 @@
 		3B0058EF2F6EC36700BAA9FB /* Products */ = {
 			isa = PBXGroup;
 			name = Products;
+			sourceTree = "<group>";
+		};
+		3B15ED512F82738C004694AA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3B15ED522F82738C004694AA /* WidgetKit.framework */,
+				3B15ED542F82738D004694AA /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		3B33C4922F56124C007880A3 /* workflows */ = {
@@ -100,8 +173,9 @@
 				3B33C48F2F561222007880A3 /* .gitignore */,
 				3BC17C392F543B7D009DD857 /* Oru */,
 				3BC17C492F543B7E009DD857 /* OruTests */,
+				3B15ED562F82738D004694AA /* OruTimerWidget */,
+				3B15ED512F82738C004694AA /* Frameworks */,
 				3BC17C382F543B7D009DD857 /* Products */,
-				3B4E98872F5AD4C900394045 /* CLAUDE.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -110,6 +184,7 @@
 			children = (
 				3BC17C372F543B7D009DD857 /* Oru.app */,
 				3BC17C462F543B7E009DD857 /* OruTests.xctest */,
+				3B15ED502F82738C004694AA /* OruTimerWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -117,6 +192,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		3B15ED4F2F82738C004694AA /* OruTimerWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3B15ED692F82738E004694AA /* Build configuration list for PBXNativeTarget "OruTimerWidgetExtension" */;
+			buildPhases = (
+				3B15ED4C2F82738C004694AA /* Sources */,
+				3B15ED4D2F82738C004694AA /* Frameworks */,
+				3B15ED4E2F82738C004694AA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				3B15ED562F82738D004694AA /* OruTimerWidget */,
+			);
+			name = OruTimerWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = OruTimerWidgetExtension;
+			productReference = 3B15ED502F82738C004694AA /* OruTimerWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		3BC17C362F543B7D009DD857 /* Oru */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3BC17C5A2F543B7E009DD857 /* Build configuration list for PBXNativeTarget "Oru" */;
@@ -125,10 +222,12 @@
 				3BC072E52F54541E00C6E267 /* SwiftLint */,
 				3BC17C342F543B7D009DD857 /* Frameworks */,
 				3BC17C352F543B7D009DD857 /* Resources */,
+				3B15ED652F82738E004694AA /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				3B15ED632F82738E004694AA /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				3BC17C392F543B7D009DD857 /* Oru */,
@@ -173,6 +272,9 @@
 				LastSwiftUpdateCheck = 2610;
 				LastUpgradeCheck = 2610;
 				TargetAttributes = {
+					3B15ED4F2F82738C004694AA = {
+						CreatedOnToolsVersion = 26.1.1;
+					};
 					3BC17C362F543B7D009DD857 = {
 						CreatedOnToolsVersion = 26.1.1;
 					};
@@ -204,11 +306,19 @@
 			targets = (
 				3BC17C362F543B7D009DD857 /* Oru */,
 				3BC17C452F543B7E009DD857 /* OruTests */,
+				3B15ED4F2F82738C004694AA /* OruTimerWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		3B15ED4E2F82738C004694AA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3BC17C352F543B7D009DD857 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -253,6 +363,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		3B15ED4C2F82738C004694AA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3BC17C332F543B7D009DD857 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -270,6 +387,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		3B15ED632F82738E004694AA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3B15ED4F2F82738C004694AA /* OruTimerWidgetExtension */;
+			targetProxy = 3B15ED622F82738E004694AA /* PBXContainerItemProxy */;
+		};
 		3BC17C482F543B7E009DD857 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 3BC17C362F543B7D009DD857 /* Oru */;
@@ -278,6 +400,70 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		3B15ED662F82738E004694AA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2KGM56VF9U;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OruTimerWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OruTimerWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.antoniorodriguez.Oru2026.OruTimerWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3B15ED672F82738E004694AA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2KGM56VF9U;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OruTimerWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OruTimerWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.antoniorodriguez.Oru2026.OruTimerWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		3BC17C582F543B7E009DD857 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -402,11 +588,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2KGM56VF9U;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -419,6 +608,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.antoniorodriguez.Oru2026;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -434,11 +624,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2KGM56VF9U;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -451,6 +644,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.antoniorodriguez.Oru2026;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -508,6 +702,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3B15ED692F82738E004694AA /* Build configuration list for PBXNativeTarget "OruTimerWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3B15ED662F82738E004694AA /* Debug */,
+				3B15ED672F82738E004694AA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		3BC17C322F543B7D009DD857 /* Build configuration list for PBXProject "Oru" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
