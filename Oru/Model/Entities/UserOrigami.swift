@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class UserOrigami {
+final class UserOrigami: Identifiable {
     var revealedPhase: Int
     var completed: Bool
     var completionDate: Date?
