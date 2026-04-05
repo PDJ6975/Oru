@@ -399,40 +399,7 @@ extension Habit.Weekday {
 
 // MARK: - Preview
 
-private struct HabitFormPreview: View {
-    @State private var viewModel: HabitViewModel
-
-    let container: ModelContainer
-
-    init() {
-        let schema = Schema([
-            User.self, Habit.self, Unit.self, Compliance.self,
-            Origami.self, UserOrigami.self, OrigamiPhase.self, Quote.self
-        ])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-        // swiftlint:disable:next force_try
-        let container = try! ModelContainer(for: schema, configurations: [config])
-        self.container = container
-
-        let context = container.mainContext
-
-        let minutos = Unit(name: "min")
-        let km = Unit(name: "km")
-        let paginas = Unit(name: "páginas")
-        context.insert(minutos)
-        context.insert(km)
-        context.insert(paginas)
-
-        let repository = HabitRepository(modelContext: context)
-        _viewModel = State(initialValue: HabitViewModel(repository: repository))
-    }
-
-    var body: some View {
-        HabitFormView(viewModel: viewModel)
-            .modelContainer(container)
-    }
-}
-
-#Preview {
-    HabitFormPreview()
+#Preview(traits: .sampleData) {
+    @Previewable @Environment(\.modelContext) var context
+    HabitFormView(viewModel: HabitViewModel(repository: HabitRepository(modelContext: context)))
 }

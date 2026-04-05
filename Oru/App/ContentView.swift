@@ -35,7 +35,6 @@ struct ContentView: View {
     }
 }
 
-#Preview {
+#Preview(traits: .emptyContainer) {
     ContentView()
-        .modelContainer(for: User.self, inMemory: true)
 }

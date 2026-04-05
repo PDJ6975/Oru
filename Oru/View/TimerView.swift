@@ -229,44 +229,7 @@ struct TimerView: View {
 
 // MARK: - Preview
 
-private struct TimerPreview: View {
-    @State private var viewModel: TimerViewModel
-
-    let container: ModelContainer
-
-    init() {
-        let schema = Schema([
-            User.self, Habit.self, Unit.self, Compliance.self,
-            Origami.self, UserOrigami.self, OrigamiPhase.self, Quote.self
-        ])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-        // swiftlint:disable:next force_try
-        let container = try! ModelContainer(for: schema, configurations: [config])
-        self.container = container
-
-        let context = container.mainContext
-        let min = Unit(name: "min")
-        context.insert(min)
-
-        let meditar = Habit(
-            icon: "🧘🏼", name: "Meditar", type: .quantity,
-            scheduledDays: Habit.Weekday.allCases, dailyGoal: 15
-        )
-        meditar.unit = min
-        context.insert(meditar)
-        try? context.save()
-
-        let repository = HabitRepository(modelContext: context)
-        _viewModel = State(initialValue: TimerViewModel(repository: repository))
-    }
-
-    var body: some View {
-        TimerView(viewModel: viewModel)
-            .modelContainer(container)
-            .oruDefaultTint()
-    }
-}
-
-#Preview {
-    TimerPreview()
+#Preview(traits: .sampleData) {
+    @Previewable @Environment(\.modelContext) var context
+    TimerView(viewModel: TimerViewModel(repository: HabitRepository(modelContext: context)))
 }

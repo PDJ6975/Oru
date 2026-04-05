@@ -100,7 +100,7 @@ private extension NameRegistrationView {
     }
 }
 
-#Preview {
+#Preview(traits: .emptyContainer) {
     NameRegistrationView(
         viewModel: WelcomeViewModel(),
         onRegistered: {}

@@ -443,79 +443,9 @@ extension Habit.Weekday {
 
 // MARK: - Preview
 
-private struct HabitListPreview: View {
-    @State private var viewModel: HabitViewModel
-
-    let container: ModelContainer
-
-    init() {
-        let schema = Schema([
-            User.self, Habit.self, Unit.self, Compliance.self,
-            Origami.self, UserOrigami.self, OrigamiPhase.self, Quote.self
-        ])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-        // swiftlint:disable:next force_try
-        let container = try! ModelContainer(for: schema, configurations: [config])
-        self.container = container
-
-        let context = container.mainContext
-
-        let minutos = Unit(name: "min")
-        let km = Unit(name: "km")
-        context.insert(minutos)
-        context.insert(km)
-
-        let meditar = Habit(
-            icon: "🧘🏼",
-            name: "Meditar",
-            type: .boolean,
-            scheduledDays: [.monday, .tuesday, .wednesday, .thursday, .friday],
-            note: "Antes de desayunar, en silencio"
-        )
-
-        let correr = Habit(
-            icon: "🏃🏼",
-            name: "Correr",
-            type: .quantity,
-            scheduledDays: [.monday, .wednesday, .friday],
-            dailyGoal: 5,
-            note: "Por el parque con música"
-        )
-        correr.unit = km
-
-        context.insert(meditar)
-        context.insert(correr)
-        for dayOffset in 1...30 {
-            let compliance = Compliance(
-                date: Calendar.current.date(byAdding: .day, value: -dayOffset, to: .now) ?? .now,
-                completed: true
-            )
-            compliance.habit = meditar
-            context.insert(compliance)
-        }
-
-        for dayOffset in 1...65 {
-            let compliance = Compliance(
-                date: Calendar.current.date(byAdding: .day, value: -dayOffset, to: .now) ?? .now,
-                completed: true,
-                recordedAmount: 5
-            )
-            compliance.habit = correr
-            context.insert(compliance)
-        }
-
-        let repository = HabitRepository(modelContext: context)
-        _viewModel = State(initialValue: HabitViewModel(repository: repository))
+#Preview(traits: .sampleData) {
+    @Previewable @Environment(\.modelContext) var context
+    NavigationStack {
+        HabitListView(viewModel: HabitViewModel(repository: HabitRepository(modelContext: context)))
     }
-
-    var body: some View {
-        NavigationStack {
-            HabitListView(viewModel: viewModel)
-        }
-        .modelContainer(container)
-    }
-}
-
-#Preview {
-    HabitListPreview()
 }

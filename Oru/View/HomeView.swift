@@ -187,87 +187,43 @@ struct HomeView: View {
     }
 }
 
-private struct HomePreview: View {
-    let container: ModelContainer
-    @State private var gamificationVM: GamificationViewModel?
+#Preview(traits: .sampleData) {
+    @Previewable @Environment(\.modelContext) var context
+    @Previewable @State var gamificationVM: GamificationViewModel?
 
-    init() {
-        let schema = Schema([
-            User.self, Habit.self, Unit.self, Compliance.self,
-            Origami.self, UserOrigami.self, OrigamiPhase.self, Quote.self
-        ])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-        // swiftlint:disable:next force_try
-        let container = try! ModelContainer(for: schema, configurations: [config])
-        self.container = container
+    NavigationStack {
+        ZStack {
+            HomeView(gamificationVM: $gamificationVM)
 
-        let context = container.mainContext
-        let user = User(name: "Antonio")
-        context.insert(user)
-
-        let mariposa = Origami(name: "mariposa", numberOfPhases: 5)
-        context.insert(mariposa)
-        for phase in 0..<5 {
-            let op = OrigamiPhase(phaseNumber: phase, illustrationName: "mariposa_fase\(phase)")
-            op.origami = mariposa
-            context.insert(op)
-        }
-
-        let luna = Origami(name: "luna", numberOfPhases: 6)
-        context.insert(luna)
-        for phase in 0..<6 {
-            let op = OrigamiPhase(phaseNumber: phase, illustrationName: "luna_fase\(phase)")
-            op.origami = luna
-            context.insert(op)
-        }
-
-        let uo = UserOrigami()
-        uo.user = user
-        uo.origami = mariposa
-        uo.progressPercentage = 0
-        uo.revealedPhase = 0
-        context.insert(uo)
-
-        let repo = OrigamiRepository(modelContext: context)
-        let gvm = GamificationViewModel(origamiRepository: repo)
-        gvm.loadOrigami()
-        _gamificationVM = State(initialValue: gvm)
-    }
-
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                HomeView(gamificationVM: $gamificationVM)
-
-                VStack {
-                    Spacer()
-                    HStack(spacing: 16) {
-                        Button("-5%") {
-                            gamificationVM?.currentOrigami?.progressPercentage = max(
-                                (gamificationVM?.progressPercentage ?? 0) - 5, 0
-                            )
-                        }
-                        Button("+5%") {
-                            let ceiling = gamificationVM?.nextPhaseThreshold ?? 100
-                            gamificationVM?.currentOrigami?.progressPercentage = min(
-                                (gamificationVM?.progressPercentage ?? 0) + 5, ceiling
-                            )
-                        }
-                        Button("100%") {
-                            guard let uo = gamificationVM?.currentOrigami,
-                                  let total = uo.origami?.numberOfPhases else { return }
-                            uo.revealedPhase = total - 1
-                            uo.progressPercentage = 100
-                        }
+            VStack {
+                Spacer()
+                HStack(spacing: 16) {
+                    Button("-5%") {
+                        gamificationVM?.currentOrigami?.progressPercentage = max(
+                            (gamificationVM?.progressPercentage ?? 0) - 5, 0
+                        )
                     }
-                    .buttonStyle(.borderedProminent)
-                    .padding(.bottom, 30)
+                    Button("+5%") {
+                        let ceiling = gamificationVM?.nextPhaseThreshold ?? 100
+                        gamificationVM?.currentOrigami?.progressPercentage = min(
+                            (gamificationVM?.progressPercentage ?? 0) + 5, ceiling
+                        )
+                    }
+                    Button("100%") {
+                        guard let uo = gamificationVM?.currentOrigami,
+                              let total = uo.origami?.numberOfPhases else { return }
+                        uo.revealedPhase = total - 1
+                        uo.progressPercentage = 100
+                    }
                 }
+                .buttonStyle(.borderedProminent)
+                .padding(.bottom, 30)
             }
         }
-        .modelContainer(container)
-        .oruDefaultTint()
+    }
+    .onAppear {
+        let gvm = GamificationViewModel(origamiRepository: OrigamiRepository(modelContext: context))
+        gvm.loadOrigami()
+        gamificationVM = gvm
     }
 }
-
-#Preview { HomePreview() }
