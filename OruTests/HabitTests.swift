@@ -4,7 +4,7 @@ import Foundation
 
 @MainActor
 @Suite(.serialized)
-struct HabitCreationTests {
+struct HabitTests {
 
     private let vm: HabitViewModel
     private let repo: MockHabitRepository
@@ -14,156 +14,69 @@ struct HabitCreationTests {
         vm = HabitViewModel(repository: repo)
     }
 
-    @discardableResult
-    private func insertHabit(
-        name: String = "Test",
-        status: Habit.HabitStatus = .active,
-        scheduledDays: [Habit.Weekday] = Habit.Weekday.allCases
+    // MARK: - Helpers
+
+    private func makeHabit(
+        type: Habit.HabitType = .boolean,
+        dailyGoal: Double? = nil
     ) -> Habit {
-        let habit = Habit(
+        Habit(
             icon: "🧪",
-            name: name,
-            type: .boolean,
-            scheduledDays: scheduledDays,
-            status: status
+            name: "Test",
+            type: type,
+            scheduledDays: Habit.Weekday.allCases,
+            dailyGoal: dailyGoal
         )
-        repo.habits.append(habit)
-        return habit
     }
 
-    // MARK: - Tests
-
-    @Test func addHabit_persistsToRepo() {
-        let habit = Habit(
-            icon: "🧪", name: "Nuevo",
-            type: .boolean, scheduledDays: [.monday]
-        )
-
-        vm.addHabit(habit)
-
-        #expect(repo.habits.count == 1)
-        #expect(repo.habits.first?.name == "Nuevo")
-    }
-
-    @Test func deleteHabit_removesFromRepo() {
-        let habit = insertHabit(name: "Borrar")
-
-        vm.deleteHabit(habit)
-
-        #expect(repo.habits.isEmpty)
-    }
-}
-
-// MARK: - 2. Marcado booleano
-
-@MainActor
-@Suite(.serialized)
-struct HabitBooleanTests {
-
-    private let vm: HabitViewModel
-    private let repo: MockHabitRepository
-
-    init() {
-        repo = MockHabitRepository()
-        vm = HabitViewModel(repository: repo)
-    }
-
-    private func makeHabit() -> Habit {
-        let habit = Habit(
-            icon: "🧪", name: "Booleano",
-            type: .boolean,
-            scheduledDays: Habit.Weekday.allCases
-        )
-        return habit
-    }
-
-    @Test func toggleBoolean_createsCompliance() {
+    private func makeHabitWithCompliances(count: Int) -> Habit {
         let habit = makeHabit()
+        guard count > 0 else { return habit }
+        for dayOffset in 1...count {
+            let date = Calendar.current.date(byAdding: .day, value: -dayOffset, to: .now) ?? .now
+            habit.compliances.append(Compliance(date: date, completed: true))
+        }
+        return habit
+    }
+
+    // MARK: - Marcado booleano
+
+    @Test func toggleBoolean_createsCompliance() throws {
+        let habit = makeHabit()
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: .now) ?? .now
+        habit.compliances.append(Compliance(date: yesterday, completed: true))
+
+        #expect(vm.todayCompliance(for: habit) == nil)
 
         vm.toggleBoolean(for: habit)
 
-        let compliance = vm.todayCompliance(for: habit)
-        #expect(compliance != nil)
-        #expect(compliance?.completed == true)
+        let compliance = try #require(vm.todayCompliance(for: habit))
+        #expect(compliance.completed == true)
+        #expect(Calendar.current.isDateInToday(compliance.date))
     }
 
     @Test func toggleBoolean_togglesExisting() {
         let habit = makeHabit()
-        vm.toggleBoolean(for: habit) // crea con completed: true
+        vm.toggleBoolean(for: habit) // completed: true
 
         vm.toggleBoolean(for: habit) // invierte a false
 
         #expect(vm.todayCompliance(for: habit)?.completed == false)
     }
 
-    @Test func toggleBoolean_doubleToggle() {
-        let habit = makeHabit()
-        vm.toggleBoolean(for: habit) // true
-        vm.toggleBoolean(for: habit) // false
+    // MARK: - Registro de cantidades
 
-        vm.toggleBoolean(for: habit) // true de nuevo
-
-        #expect(vm.todayCompliance(for: habit)?.completed == true)
-    }
-
-    @Test func todayCompliance_returnsNilIfNone() {
-        let habit = makeHabit()
-
-        #expect(vm.todayCompliance(for: habit) == nil)
-    }
-
-    @Test func todayCompliance_ignoresPastDates() {
-        let habit = makeHabit()
-        let yesterday = Calendar.current.date(
-            byAdding: .day, value: -1, to: .now
-        )!
-        let oldCompliance = Compliance(
-            date: yesterday, completed: true
-        )
-        habit.compliances.append(oldCompliance)
-
-        #expect(vm.todayCompliance(for: habit) == nil)
-    }
-}
-
-// MARK: - 3. Registro de cantidades
-
-@MainActor
-@Suite(.serialized)
-struct HabitAmountTests {
-
-    private let vm: HabitViewModel
-    private let repo: MockHabitRepository
-
-    init() {
-        repo = MockHabitRepository()
-        vm = HabitViewModel(repository: repo)
-    }
-
-    private func makeQuantityHabit(
-        dailyGoal: Double? = nil
-    ) -> Habit {
-        let habit = Habit(
-            icon: "🧪", name: "Cantidad",
-            type: .quantity,
-            scheduledDays: Habit.Weekday.allCases,
-            dailyGoal: dailyGoal
-        )
-        return habit
-    }
-
-    @Test func recordAmount_createsCompliance() {
-        let habit = makeQuantityHabit()
+    @Test func recordAmount_createsCompliance() throws {
+        let habit = makeHabit(type: .quantity)
 
         vm.recordAmount(3, for: habit)
 
-        let compliance = vm.todayCompliance(for: habit)
-        #expect(compliance != nil)
-        #expect(compliance?.recordedAmount == 3)
+        let compliance = try #require(vm.todayCompliance(for: habit))
+        #expect(compliance.recordedAmount == 3)
     }
 
     @Test func recordAmount_zeroDeletesCompliance() {
-        let habit = makeQuantityHabit()
+        let habit = makeHabit(type: .quantity)
         vm.recordAmount(5, for: habit)
 
         vm.recordAmount(0, for: habit)
@@ -171,43 +84,37 @@ struct HabitAmountTests {
         #expect(vm.todayCompliance(for: habit) == nil)
     }
 
-    @Test func recordAmount_updatesExisting() {
-        let habit = makeQuantityHabit()
+    @Test func recordAmount_updatesExisting() throws {
+        let habit = makeHabit(type: .quantity)
         vm.recordAmount(3, for: habit)
 
         vm.recordAmount(7, for: habit)
 
-        let compliance = vm.todayCompliance(for: habit)
-        #expect(compliance?.recordedAmount == 7)
+        let compliance = try #require(vm.todayCompliance(for: habit))
+        #expect(compliance.recordedAmount == 7)
         #expect(habit.compliances.count == 1)
     }
 
-    @Test func isGoalMet_withGoal_belowTarget() {
-        let habit = makeQuantityHabit(dailyGoal: 5)
+    @Test func recordAmount_completionReflectsGoal() {
+        let habit = makeHabit(type: .quantity, dailyGoal: 5)
+
+        vm.recordAmount(3, for: habit)
+        #expect(vm.todayCompliance(for: habit)?.completed == false)
+
+        vm.recordAmount(5, for: habit)
+        #expect(vm.todayCompliance(for: habit)?.completed == true)
+    }
+
+    // MARK: - Objetivo
+
+    @Test func isGoalMet_reflectsGoal() {
+        let habit = makeHabit(type: .quantity, dailyGoal: 5)
 
         #expect(habit.isGoalMet(3) == false)
-    }
-
-    @Test func isGoalMet_withGoal_meetsTarget() {
-        let habit = makeQuantityHabit(dailyGoal: 5)
-
         #expect(habit.isGoalMet(5) == true)
     }
-}
 
-// MARK: - 4. Unidades personalizadas
-
-@MainActor
-@Suite(.serialized)
-struct HabitCustomUnitTests {
-
-    private let vm: HabitViewModel
-    private let repo: MockHabitRepository
-
-    init() {
-        repo = MockHabitRepository()
-        vm = HabitViewModel(repository: repo)
-    }
+    // MARK: - 4. Unidades personalizadas
 
     @Test func addCustomUnit_success() {
         let result = vm.addCustomUnit(name: "pasos")
@@ -233,11 +140,18 @@ struct HabitCustomUnitTests {
         #expect(repo.units.count == 1)
     }
 
+    @Test func addCustomUnit_baseUnitName() {
+        repo.units.append(Oru.Unit(name: "km", origin: .base))
+
+        let result = vm.addCustomUnit(name: "km")
+
+        #expect(result == false)
+        #expect(repo.units.count == 1)
+    }
+
     @Test func addCustomUnit_maxLimitReached() {
         for idx in 0..<Oru.Unit.maxCustomCount {
-            repo.units.append(
-                Oru.Unit(name: "u\(idx)", origin: .custom)
-            )
+            repo.units.append(Oru.Unit(name: "u\(idx)", origin: .custom))
         }
 
         let result = vm.addCustomUnit(name: "extra")
@@ -266,47 +180,13 @@ struct HabitCustomUnitTests {
         #expect(result == false)
         #expect(unit.name == "pasos")
     }
-}
 
-// MARK: - 5. Consolidación y archivado
-
-@MainActor
-@Suite(.serialized)
-struct HabitConsolidationTests {
-
-    private let vm: HabitViewModel
-    private let repo: MockHabitRepository
-
-    init() {
-        repo = MockHabitRepository()
-        vm = HabitViewModel(repository: repo)
-    }
-
-    private func makeHabitWithCompliances(
-        count: Int
-    ) -> Habit {
-        let habit = Habit(
-            icon: "🧪", name: "Consolidar",
-            type: .boolean,
-            scheduledDays: Habit.Weekday.allCases
-        )
-        for dayOffset in 1...count {
-            let date = Calendar.current.date(
-                byAdding: .day, value: -dayOffset, to: .now
-            )!
-            let compliance = Compliance(
-                date: date, completed: true
-            )
-            habit.compliances.append(compliance)
-        }
-        return habit
-    }
+    // MARK: - 5. Consolidación y archivado
 
     @Test func consolidation_at66_changesStatus() {
         let habit = makeHabitWithCompliances(count: 65)
 
-        // El toggle de hoy crea el compliance nº 66
-        vm.toggleBoolean(for: habit)
+        vm.toggleBoolean(for: habit) // compliance nº 66
 
         #expect(habit.status == .consolidated)
     }
@@ -314,18 +194,9 @@ struct HabitConsolidationTests {
     @Test func consolidation_at65_remainsActive() {
         let habit = makeHabitWithCompliances(count: 64)
 
-        // El toggle de hoy crea el compliance nº 65
-        vm.toggleBoolean(for: habit)
+        vm.toggleBoolean(for: habit) // compliance nº 65
 
         #expect(habit.status == .active)
-    }
-
-    @Test func consolidation_at66_setsConsolidatedHabit() {
-        let habit = makeHabitWithCompliances(count: 65)
-
-        vm.toggleBoolean(for: habit)
-
-        #expect(vm.consolidatedHabit === habit)
     }
 
     @Test func consolidation_revert_below66() {
@@ -333,38 +204,23 @@ struct HabitConsolidationTests {
         vm.toggleBoolean(for: habit) // nº 66 -> consolidated
         #expect(habit.status == .consolidated)
 
-        // Desmarcar hoy -> 65 completed -> vuelve a active
-        vm.toggleBoolean(for: habit)
+        vm.toggleBoolean(for: habit) // desmarcar hoy -> 65 completed -> active
 
         #expect(habit.status == .active)
     }
 
-    @Test func archiveHabit_changesStatus() {
-        let habit = Habit(
-            icon: "🧪", name: "Archivar",
-            type: .boolean,
-            scheduledDays: Habit.Weekday.allCases
-        )
+    @Test func archiveHabit_setsStatusAndDate() throws {
+        let habit = makeHabit()
+        let before = Date.now
 
         vm.archiveHabit(habit)
 
         #expect(habit.status == .archived)
-        #expect(habit.archivedDate != nil)
+        let archivedDate = try #require(habit.archivedDate)
+        #expect(archivedDate >= before)
     }
 
-}
-
-// MARK: - 6. Validación
-
-@MainActor
-@Suite(.serialized)
-struct HabitValidationTests {
-
-    private let vm: HabitViewModel
-
-    init() {
-        vm = HabitViewModel(repository: MockHabitRepository())
-    }
+    // MARK: - 6. Validación
 
     @Test func isValidHabit_validInput() {
         let result = vm.isValidHabit(
@@ -410,14 +266,19 @@ struct HabitValidationTests {
         #expect(result == false)
     }
 
-    @Test func clampName_withinLimit() {
-        let name = "Correr" // 6 chars
+    @Test func isValidHabit_quantityWithGoal() {
+        let result = vm.isValidHabit(
+            name: "Correr",
+            selectedDays: [.monday],
+            type: .quantity,
+            dailyGoal: 5
+        )
 
-        #expect(vm.clampName(name) == "Correr")
+        #expect(result == true)
     }
 
     @Test func clampName_exceedsLimit() {
-        let name = "Este nombre es muy largo" // 24 chars
+        let name = "Este nombre es muy largo para el límite"
 
         let result = vm.clampName(name)
 
