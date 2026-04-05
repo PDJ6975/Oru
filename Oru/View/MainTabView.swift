@@ -66,9 +66,13 @@ struct MainTabView: View {
                 )
             }
             if timerVM == nil {
-                timerVM = TimerViewModel(
+                let tvm = TimerViewModel(
                     repository: HabitRepository(modelContext: modelContext)
                 )
+                tvm.onSessionCompleted = { [weak gamificationVM] minutes in
+                    gamificationVM?.applySessionBonus(durationMinutes: minutes)
+                }
+                timerVM = tvm
             }
         }
     }

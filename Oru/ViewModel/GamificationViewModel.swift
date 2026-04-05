@@ -121,6 +121,24 @@ class GamificationViewModel {
         }
     }
 
+    private func sessionBonusPercentage(for minutes: Int) -> Double {
+        switch minutes {
+        case ..<15:  return 1.0
+        case 15..<30: return 2.0
+        case 30..<45: return 3.0
+        case 45..<60: return 4.0
+        default:      return 5.0
+        }
+    }
+
+    func applySessionBonus(durationMinutes: Int) {
+        guard let userOrigami = currentOrigami else { return }
+        let bonus = sessionBonusPercentage(for: durationMinutes)
+        let ceiling = nextPhaseThreshold ?? 100.0
+        userOrigami.progressPercentage = min(userOrigami.progressPercentage + bonus, ceiling)
+        save()
+    }
+
     private func save() {
         do {
             try origamiRepository.saveChanges()

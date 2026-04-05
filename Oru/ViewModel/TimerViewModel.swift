@@ -16,6 +16,7 @@ class TimerViewModel {
     var selectedHabit: Habit?
     private(set) var compatibleHabits: [Habit] = []
 
+    var onSessionCompleted: ((Int) -> Void)?
     var lastError: String?
     private let repository: HabitRepositoryProtocol
     private var timerTask: Task<Void, Never>?
@@ -62,6 +63,7 @@ class TimerViewModel {
     private func finish() {
         if trackHabit, let habit = selectedHabit {
             recordSession(for: habit)
+            onSessionCompleted?(selectedMinutes)
         }
         resetSession()
     }
