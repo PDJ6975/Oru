@@ -55,9 +55,13 @@ struct MainTabView: View {
                 gamificationVM = gvm
             }
             if habitVM == nil {
-                habitVM = HabitViewModel(
+                let hvm = HabitViewModel(
                     repository: HabitRepository(modelContext: modelContext)
                 )
+                hvm.onHabitChanged = { [weak gamificationVM] allCompleted in
+                    gamificationVM?.updateDailyProgress(allCompleted: allCompleted)
+                }
+                habitVM = hvm
             }
             if statsVM == nil {
                 statsVM = StatsViewModel(

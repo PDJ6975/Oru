@@ -1,8 +1,10 @@
+import Foundation
 import SwiftData
 
 @Model
 final class User {
     var name: String
+    var dailyBonusAppliedDate: Date?
     
     // Un borrado en cascada requiere definir la relación bidireccional con inverse
     @Relationship(deleteRule: .cascade, inverse: \Habit.user)

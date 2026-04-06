@@ -77,19 +77,22 @@ class GamificationViewModel {
         }
     }
 
-    // Actualiza el progreso del origami activo al completar/descompletar un hábito
-    // Incremento por hábito = 3% / número de hábitos programados hoy
-    // El progreso se congela al alcanzar el umbral de la siguiente fase
-    func habitToggled(completed: Bool, todayHabitCount: Int) {
-        guard todayHabitCount > 0, let userOrigami = currentOrigami else { return }
-        let delta = dailyPercentage / Double(todayHabitCount)
-        let ceiling = nextPhaseThreshold ?? 100.0
-        if completed {
-            userOrigami.progressPercentage = min(userOrigami.progressPercentage + delta, ceiling)
-        } else {
-            userOrigami.progressPercentage = max(userOrigami.progressPercentage - delta, 0)
+    // Aplica o revierte el bonus diario (+3%) según si todos los hábitos del día están completos
+    func updateDailyProgress(allCompleted: Bool) {
+        guard let userOrigami = currentOrigami, let user = userOrigami.user else { return }
+        let alreadyApplied = user.dailyBonusAppliedDate
+            .map { Calendar.current.isDateInToday($0) } ?? false
+
+        if allCompleted && !alreadyApplied {
+            let ceiling = nextPhaseThreshold ?? 100.0
+            userOrigami.progressPercentage = min(userOrigami.progressPercentage + dailyPercentage, ceiling)
+            user.dailyBonusAppliedDate = .now
+            save()
+        } else if !allCompleted && alreadyApplied {
+            userOrigami.progressPercentage = max(userOrigami.progressPercentage - dailyPercentage, 0)
+            user.dailyBonusAppliedDate = nil
+            save()
         }
-        save()
     }
 
     // Avanza a la siguiente fase cuando el usuario pulsa

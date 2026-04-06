@@ -8,6 +8,7 @@ class HabitViewModel {
 
     var lastError: String?
     var consolidatedHabit: Habit?
+    var onHabitChanged: ((_ allCompleted: Bool) -> Void)?
 
     init(repository: HabitRepositoryProtocol) {
         self.repository = repository
@@ -31,6 +32,7 @@ class HabitViewModel {
         } catch {
             lastError = "No se pudo guardar el cambio: \(error.localizedDescription)"
         }
+        onHabitChanged?(checkAllCompleted())
     }
 
     // Si la cantidad es 0 y ya existe un compliance, lo elimina
@@ -57,7 +59,15 @@ class HabitViewModel {
         } catch {
             lastError = "No se pudo registrar la cantidad: \(error.localizedDescription)"
         }
+        onHabitChanged?(checkAllCompleted())
     }
+    private func checkAllCompleted() -> Bool {
+        guard let habits = try? repository.fetchActiveHabits() else { return false }
+        let today = currentWeekday()
+        let scheduled = habits.filter { $0.scheduledDays.contains(today) }
+        return !scheduled.isEmpty && scheduled.allSatisfy { todayCompliance(for: $0)?.completed ?? false }
+    }
+
     func todayCompliance(for habit: Habit) -> Compliance? {
         habit.compliances.first { Calendar.current.isDateInToday($0.date) }
     }
