@@ -34,6 +34,7 @@ private extension NameRegistrationView {
 
             Text("Cualquier proceso de transformación necesita un protagonista.")
                 .oruBody()
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -92,7 +93,10 @@ private extension NameRegistrationView {
 
 private extension NameRegistrationView {
     func attemptRegistration() {
+        guard viewModel.isNameValid else { return }
         withAnimation {
+            isNameFocused = false
+        } completion: {
             if viewModel.registerUser() {
                 onRegistered()
             }

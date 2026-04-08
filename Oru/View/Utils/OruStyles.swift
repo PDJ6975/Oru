@@ -13,7 +13,7 @@ extension Color {
 private struct OruTitleModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .font(.system(size: 26, weight: .medium, design: .rounded))
+            .font(.system(size: 25, weight: .medium, design: .rounded))
             .tracking(0.8)
             .foregroundStyle(Color.oruPrimary)
     }
