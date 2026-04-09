@@ -113,6 +113,7 @@ class TimerViewModel {
 
         let attributes = OruTimerAttributes(
             habitName: trackHabit ? selectedHabit?.name : nil,
+            habitIcon: trackHabit ? selectedHabit?.icon : nil,
             totalMinutes: selectedMinutes
         )
         let contentState = OruTimerAttributes.ContentState(endDate: endDate)

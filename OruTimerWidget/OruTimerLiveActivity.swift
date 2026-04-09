@@ -13,7 +13,7 @@ struct OruTimerLiveActivity: Widget {
             // Bloque de la vista expandida de la DI
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    Image(systemName: "timer")
+                    Text(context.attributes.habitIcon ?? "📚")
                         .font(.title2)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
@@ -31,7 +31,7 @@ struct OruTimerLiveActivity: Widget {
                 }
             // Vista compacta
             } compactLeading: {
-                Image(systemName: "timer")
+                Text(context.attributes.habitIcon ?? "📚")
             } compactTrailing: {
                 Text(
                     timerInterval: Date.now...context.state.endDate,
@@ -42,7 +42,7 @@ struct OruTimerLiveActivity: Widget {
                 .frame(width: 40)
             // Vista minimal
             } minimal: {
-                Image(systemName: "timer")
+                Text(context.attributes.habitIcon ?? "📚")
             }
         }
     }
@@ -51,9 +51,8 @@ struct OruTimerLiveActivity: Widget {
         context: ActivityViewContext<OruTimerAttributes>
     ) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: "bird")
+            Text(context.attributes.habitIcon ?? "📚")
                 .font(.system(size: 28))
-                .foregroundStyle(.secondary)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(context.attributes.habitName ?? "Sesión de enfoque")
@@ -63,6 +62,8 @@ struct OruTimerLiveActivity: Widget {
                     .foregroundStyle(.secondary)
             }
 
+            Spacer()
+            
             Spacer()
 
             Text(

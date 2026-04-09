@@ -130,6 +130,7 @@ struct TimerView: View {
                     .tracking(0.8)
                     .foregroundStyle(.secondary)
             }
+            .tint(Color.oruPrimary)
 
             HStack(spacing: 10) {
                 Menu {

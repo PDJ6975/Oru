@@ -7,5 +7,6 @@ nonisolated struct OruTimerAttributes: ActivityAttributes {
     }
 
     let habitName: String?
+    let habitIcon: String?
     let totalMinutes: Int
 }
