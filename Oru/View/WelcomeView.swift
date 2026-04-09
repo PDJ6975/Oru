@@ -3,6 +3,8 @@ import SwiftUI
 struct WelcomeView: View {
     var onStart: () -> Void
 
+    @State private var animateOrigamis = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 40) {
 
@@ -16,6 +18,15 @@ struct WelcomeView: View {
             startButton
         }
         .padding(32)
+        .overlay(alignment: .bottom) {
+            origamiSection
+                .padding(.bottom, 150)
+        }
+        .onAppear {
+            withAnimation(.easeIn(duration: 2.5).delay(0.3)) {
+                animateOrigamis = true
+            }
+        }
     }
 }
 
@@ -37,6 +48,19 @@ private extension WelcomeView {
             FeatureRow(icon: "arrow.triangle.2.circlepath", text: "Construye rutinas diarias.")
             FeatureRow(icon: "scope", text: "Enfoca tu tiempo.")
             FeatureRow(icon: "star", text: "Colecciona tus logros.")
+        }
+    }
+
+    var origamiSection: some View {
+        HStack {
+            Spacer()
+            Image("flor_fase5")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 220)
+                .rotationEffect(.degrees(-40), anchor: .bottom)
+                .offset(x: 120)
+                .opacity(animateOrigamis ? 0.8 : 0)
         }
     }
 
