@@ -11,23 +11,20 @@ struct TimerView: View {
     var body: some View {
         VStack(spacing: 0) {
             timerDisplay
+                .padding(.top, 40)
 
             controls
 
             if viewModel.state == .idle {
                 habitTrackingCard
-                    .padding(.top, 40)
-                    .padding(.horizontal, 24)
-
-                notificationCard
-                    .padding(.top, 40)
+                    .padding(.top, 35)
                     .padding(.horizontal, 24)
 
                 Image("fondo_temporizador")
                     .resizable()
                     .scaledToFit()
                     .frame(height: 190)
-                    .padding(.top, 20)
+                    .padding(.top, 70)
             }
         }
         .frame(maxHeight: .infinity, alignment: viewModel.state == .running ? .center : .top)
@@ -192,33 +189,6 @@ struct TimerView: View {
         .padding(.vertical, 12)
         .glassEffect(.regular, in: .rect(cornerRadius: 14))
     }
-    
-    // MARK: - Notification Card
-
-        private var notificationCard: some View {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 20) {
-                    Text("No te olvides las notificaciones")
-                        .font(.system(size: 17, weight: .regular, design: .rounded))
-                        .tracking(0.8)
-                        .foregroundStyle(.secondary)
-
-                    Text("Activa las notificaciones para maximizar la experiencia en la aplicación")
-                        .font(.system(size: 15, weight: .regular, design: .rounded))
-                        .lineSpacing(3)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .glassEffect(.regular, in: .rect(cornerRadius: 14))
-        }
 
     // MARK: - Step Buttons
 

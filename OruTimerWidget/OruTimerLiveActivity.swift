@@ -23,10 +23,12 @@ struct OruTimerLiveActivity: Widget {
                         showsHours: false
                     )
                     .font(.title2.monospacedDigit())
+                    .multilineTextAlignment(.trailing)
+                    .frame(width: 85)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     Text(context.attributes.habitName ?? "Sesión de enfoque")
-                        .font(.caption)
+                        .font(.title3)
                         .foregroundStyle(.secondary)
                 }
             // Vista compacta

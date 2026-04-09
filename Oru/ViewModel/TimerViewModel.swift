@@ -120,7 +120,7 @@ class TimerViewModel {
         do {
             currentActivity = try Activity.request(
                 attributes: attributes,
-                content: .init(state: contentState, staleDate: endDate)
+                content: .init(state: contentState, staleDate: nil)
             )
         } catch {
             Self.logger.warning("No se pudo iniciar la Live Activity: \(error.localizedDescription)")
