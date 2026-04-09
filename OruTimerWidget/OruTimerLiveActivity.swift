@@ -18,7 +18,7 @@ struct OruTimerLiveActivity: Widget {
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     Text(
-                        timerInterval: Date.now...context.state.endDate,
+                        timerInterval: Date.now...max(context.state.endDate, Date.now + 1),
                         countsDown: true,
                         showsHours: false
                     )
@@ -37,7 +37,7 @@ struct OruTimerLiveActivity: Widget {
                     .font(.caption)
             } compactTrailing: {
                 Text(
-                    timerInterval: Date.now...context.state.endDate,
+                    timerInterval: Date.now...max(context.state.endDate, Date.now + 1),
                     countsDown: true,
                     showsHours: false
                 )
@@ -71,7 +71,7 @@ struct OruTimerLiveActivity: Widget {
             Spacer()
 
             Text(
-                timerInterval: Date.now...context.state.endDate,
+                timerInterval: Date.now...max(context.state.endDate, Date.now + 1),
                 countsDown: true,
                 showsHours: false
             )

@@ -128,13 +128,18 @@ class TimerViewModel {
     }
 
     private func endLiveActivity(dismissImmediately: Bool) {
-        guard let activity = currentActivity else { return }
+        Task { await endAllActivities(immediate: dismissImmediately) }
+    }
+
+    // Cierra TODAS las Live Activities del temporizador pasando un `ContentState` final
+    private func endAllActivities(immediate: Bool) async {
         let finalState = OruTimerAttributes.ContentState(endDate: .now)
-        let policy: ActivityUIDismissalPolicy = dismissImmediately
+        let content = ActivityContent(state: finalState, staleDate: nil)
+        let policy: ActivityUIDismissalPolicy = immediate
             ? .immediate
             : .after(.now + 180)
-        Task {
-            await activity.end(.init(state: finalState, staleDate: nil), dismissalPolicy: policy)
+        for activity in Activity<OruTimerAttributes>.activities {
+            await activity.end(content, dismissalPolicy: policy)
         }
         currentActivity = nil
     }
@@ -151,7 +156,7 @@ class TimerViewModel {
         ))
     }
 
-    func recoverSessionIfNeeded() {
+    func recoverSessionIfNeeded() async {
         guard state == .idle, let pending = PendingSessionStore.load() else { return }
 
         let now = Date.now
@@ -175,10 +180,11 @@ class TimerViewModel {
                     onSessionCompleted?(pending.selectedMinutes)
                 }
             }
-            for activity in Activity<OruTimerAttributes>.activities {
-                Task { await activity.end(nil, dismissalPolicy: .immediate) }
-            }
+            // Limpiamos el pending ANTES del cierre: si el usuario vuelve a matar
+            // la app durante el await, al reabrir no habrá nada pendiente y no se
+            // duplicará el registro del hábito.
             PendingSessionStore.clear()
+            await endAllActivities(immediate: true)
         }
     }
 
