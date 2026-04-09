@@ -32,14 +32,16 @@ struct OruTimerLiveActivity: Widget {
             // Vista compacta
             } compactLeading: {
                 Text(context.attributes.habitIcon ?? "📚")
+                    .font(.caption)
             } compactTrailing: {
                 Text(
                     timerInterval: Date.now...context.state.endDate,
                     countsDown: true,
                     showsHours: false
                 )
-                .monospacedDigit()
-                .frame(width: 40)
+                .font(.caption.monospacedDigit())
+                .multilineTextAlignment(.trailing)
+                .frame(width: 50)
             // Vista minimal
             } minimal: {
                 Text(context.attributes.habitIcon ?? "📚")

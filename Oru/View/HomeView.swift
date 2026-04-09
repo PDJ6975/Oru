@@ -7,6 +7,8 @@ struct HomeView: View {
     @Binding var gamificationVM: GamificationViewModel?
     var illustrationOverride: String?
 
+    @AppStorage("hasSeenHomeIntroAnimation") private var hasSeenIntroAnimation = false
+    @State private var animateContent = false
     @State private var revealingName: String?
     @State private var revealOpacity: Double = 0
     @State private var imageOpacity: Double = 1
@@ -57,6 +59,8 @@ struct HomeView: View {
                 origamiImage
                     .padding(.horizontal, 20)
                     .padding(.bottom, 40)
+                    .opacity(animateContent ? 1 : 0)
+                    .onAppear(perform: playIntroAnimationIfNeeded)
             }
 
             if let gvm = gamificationVM, gvm.currentOrigami != nil {
@@ -81,6 +85,18 @@ struct HomeView: View {
 
     private var breathingActive: Bool {
         (gamificationVM?.hasPendingReveal ?? false) && revealingName == nil
+    }
+
+    private func playIntroAnimationIfNeeded() {
+        guard !hasSeenIntroAnimation else {
+            animateContent = true
+            return
+        }
+
+        withAnimation(.easeIn(duration: 2.5).delay(0.3)) {
+            animateContent = true
+        }
+        hasSeenIntroAnimation = true
     }
 
     @ViewBuilder
