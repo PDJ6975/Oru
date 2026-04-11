@@ -144,6 +144,38 @@ class TimerViewModel {
         currentActivity = nil
     }
 
+    // Cierra Live Activities residuales tras cold start (apagar/encender móvil).
+    // Usa `activityUpdates` como fallback cuando el daemon aún no ha sincronizado
+    // con el proceso recién arrancado y `Activity.activities` está vacío.
+    private func endStaleActivities() async {
+        let finalState = OruTimerAttributes.ContentState(endDate: .now)
+        let content = ActivityContent(state: finalState, staleDate: nil)
+
+        // Fast path: daemon ya sincronizado
+        let current = Activity<OruTimerAttributes>.activities
+        if !current.isEmpty {
+            Self.logger.notice("endStaleActivities: \(current.count) actividad(es) encontrada(s)")
+            for activity in current {
+                await activity.end(content, dismissalPolicy: .immediate)
+            }
+            currentActivity = nil
+            return
+        }
+
+        // Slow path: cold start, el daemon aún no entregó la activity restaurada.
+        // activityUpdates emite cuando la sincronización ocurre.
+        Self.logger.notice("endStaleActivities: activities vacío, esperando daemon…")
+        let waitTask = Task {
+            for await activity in Activity<OruTimerAttributes>.activityUpdates {
+                Self.logger.notice("endStaleActivities: activity recibida, cerrando…")
+                await activity.end(content, dismissalPolicy: .immediate)
+            }
+        }
+        try? await Task.sleep(for: .seconds(2))
+        waitTask.cancel()
+        currentActivity = nil
+    }
+
     // MARK: - Persistencia
 
     private func savePendingSession(startDate: Date, endDate: Date) {
@@ -184,7 +216,7 @@ class TimerViewModel {
             // la app durante el await, al reabrir no habrá nada pendiente y no se
             // duplicará el registro del hábito.
             PendingSessionStore.clear()
-            await endAllActivities(immediate: true)
+            await endStaleActivities()
         }
     }
 

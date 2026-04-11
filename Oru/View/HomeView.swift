@@ -4,6 +4,7 @@ import SwiftData
 struct HomeView: View {
 
     @Query private var users: [User]
+    @Environment(\.modelContext) private var modelContext
     @Binding var gamificationVM: GamificationViewModel?
     var illustrationOverride: String?
 
@@ -14,6 +15,7 @@ struct HomeView: View {
     @State private var imageOpacity: Double = 1
     @State private var showNextAlert = false
     @State private var showProgressInfo = false
+    @State private var randomQuote: Quote?
 
     private var userName: String {
         users.first?.name ?? ""
@@ -47,12 +49,7 @@ struct HomeView: View {
 
                 Spacer()
 
-                Text("\"El único modo de hacer un gran trabajo es amar lo que haces.\"")
-                    .font(.system(size: 18, weight: .ultraLight, design: .serif)).italic()
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .opacity(0.9)
-                    .padding(.horizontal, 32)
+                quoteSection
 
                 Spacer()
 
@@ -62,6 +59,7 @@ struct HomeView: View {
                     .opacity(animateContent ? 1 : 0)
                     .onAppear(perform: playIntroAnimationIfNeeded)
             }
+            .onAppear(perform: loadQuoteIfNeeded)
 
             if let gvm = gamificationVM, gvm.currentOrigami != nil {
                 VStack {
@@ -97,6 +95,35 @@ struct HomeView: View {
             animateContent = true
         }
         hasSeenIntroAnimation = true
+    }
+
+    private func loadQuoteIfNeeded() {
+        guard randomQuote == nil else { return }
+        randomQuote = try? UserRepository(modelContext: modelContext).fetchRandomQuote()
+    }
+
+    @ViewBuilder
+    private var quoteSection: some View {
+        if let quote = randomQuote {
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text("\"\(quote.text)\"")
+                        .font(.system(size: 18, weight: .ultraLight, design: .serif)).italic()
+                    Text("— \(quote.source)")
+                        .font(.system(size: 14, weight: .regular, design: .serif))
+                }
+                VStack(spacing: 6) {
+                    Text("\"\(quote.text)\"")
+                        .font(.system(size: 18, weight: .ultraLight, design: .serif)).italic()
+                        .multilineTextAlignment(.center)
+                    Text("— \(quote.source)")
+                        .font(.system(size: 14, weight: .regular, design: .serif))
+                }
+            }
+            .foregroundStyle(.secondary)
+            .opacity(0.9)
+            .padding(.horizontal, 32)
+        }
     }
 
     @ViewBuilder

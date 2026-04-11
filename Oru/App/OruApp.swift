@@ -29,6 +29,8 @@ struct OruApp: App {
         try? habitRepository.seedBaseUnitsIfNeeded()
         let origamiRepository = OrigamiRepository(modelContext: context)
         try? origamiRepository.seedOrigamisIfNeeded()
+        let userRepository = UserRepository(modelContext: context)
+        try? userRepository.seedQuotesIfNeeded()
     }
 
     var body: some Scene {

@@ -77,8 +77,8 @@ struct MainTabView: View {
                 tvm.onSessionCompleted = { [weak gamificationVM] minutes in
                     gamificationVM?.applySessionBonus(durationMinutes: minutes)
                 }
-                tvm.recoverSessionIfNeeded()
                 timerVM = tvm
+                Task { await tvm.recoverSessionIfNeeded() }
             }
         }
     }

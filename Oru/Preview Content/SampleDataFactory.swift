@@ -224,15 +224,25 @@ enum SampleDataFactory {
         context.insert(uoFlor)
     }
 
+    // MARK: - Citas
+
+    // Inserta una cita de muestra para que `fetchRandomQuote()` tenga contenido
+    // durante los previews.
+    static func insertSampleQuote(into context: ModelContext) {
+        let quote = Quote(text: "Si no hay viento, habrá que remar", source: "Aristóteles")
+        context.insert(quote)
+    }
+
     // MARK: - Setup completo
 
     // Popula el contexto con todos los datos de muestra (usuario, unidades, hábitos,
-    // compliances y origamis). Punto de entrada principal para `SampleData`.
+    // compliances, origamis y citas). Punto de entrada principal para `SampleData`.
     static func populateFullContext(_ context: ModelContext) {
         let user = insertSampleUser(into: context)
         let units = insertBaseUnits(into: context)
         let habits = insertSampleHabits(units: units, user: user, into: context)
         insertCompliances(for: habits, into: context)
         insertOrigamis(user: user, into: context)
+        insertSampleQuote(into: context)
     }
 }
