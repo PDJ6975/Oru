@@ -7,7 +7,7 @@ struct SampleData: PreviewModifier {
     static func makeSharedContext() throws -> ModelContainer {
         let schema = Schema([
             User.self, Habit.self, Unit.self, Compliance.self,
-            Origami.self, UserOrigami.self, OrigamiPhase.self, Quote.self
+            Origami.self, UserOrigami.self, OrigamiPhase.self
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: [config])
@@ -28,7 +28,7 @@ struct EmptyContainerData: PreviewModifier {
     static func makeSharedContext() throws -> ModelContainer {
         let schema = Schema([
             User.self, Habit.self, Unit.self, Compliance.self,
-            Origami.self, UserOrigami.self, OrigamiPhase.self, Quote.self
+            Origami.self, UserOrigami.self, OrigamiPhase.self
         ])
         return try ModelContainer(
             for: schema,

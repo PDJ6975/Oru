@@ -11,8 +11,7 @@ struct OruApp: App {
             Compliance.self,
             Origami.self,
             UserOrigami.self, 
-            OrigamiPhase.self,
-            Quote.self
+            OrigamiPhase.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -29,8 +28,6 @@ struct OruApp: App {
         try? habitRepository.seedBaseUnitsIfNeeded()
         let origamiRepository = OrigamiRepository(modelContext: context)
         try? origamiRepository.seedOrigamisIfNeeded()
-        let userRepository = UserRepository(modelContext: context)
-        try? userRepository.seedQuotesIfNeeded()
     }
 
     var body: some Scene {

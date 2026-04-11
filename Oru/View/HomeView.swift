@@ -53,7 +53,7 @@ struct HomeView: View {
                 pausedSection
             }
         }
-        .listRowSpacing(10)
+        .listRowSpacing(15)
         .contentMargins(.top, 0, for: .scrollContent)
         .scrollDismissesKeyboard(.immediately)
         .navigationBarTitleDisplayMode(.inline)
@@ -70,7 +70,7 @@ struct HomeView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         .overlay(alignment: .topLeading) {
             Text("Hola, \(users.first?.name ?? "")!")
-                .font(.system(size: 23, weight: .regular, design: .rounded))
+                .font(.system(size: 24, weight: .regular, design: .rounded))
                 .tracking(0.8)
                 .foregroundStyle(.secondary)
                 .padding(.leading, 30)
@@ -153,7 +153,7 @@ struct HomeView: View {
                         .transition(.opacity)
                 }
             }
-            .frame(height: 350)
+            .frame(height: 400)
             .animation(.easeIn(duration: 0.5), value: gamificationVM?.isOrigamiCompleted)
             .opacity(animateContent ? 1 : 0)
             .onAppear(perform: playIntroAnimationIfNeeded)
