@@ -235,6 +235,7 @@ struct HomeView: View {
                                 .tint(.orange)
                             }
                         }
+                        .labelStyle(.iconOnly)
                 }
             }
         } header: {
@@ -262,6 +263,7 @@ struct HomeView: View {
                         }
                         .tint(.oruPrimary)
                     }
+                    .labelStyle(.iconOnly)
             }
         } header: {
             Text("En pausa")

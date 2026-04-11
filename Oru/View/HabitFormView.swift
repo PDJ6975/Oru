@@ -57,7 +57,7 @@ struct HabitFormView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 30) {
+            VStack(spacing: 40) {
                 iconAndNameSection
                     .padding(.top, 16)
                 daysSection
@@ -348,7 +348,7 @@ private struct DaysSectionView: View {
     @Binding var selectedDays: Set<Habit.Weekday>
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 26) {
             Text("¿Qué días quieres realizarlo?")
                 .oruLabel()
 

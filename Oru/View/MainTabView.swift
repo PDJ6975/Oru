@@ -11,7 +11,7 @@ struct MainTabView: View {
 
     var body: some View {
         TabView {
-            Tab("Inicio", systemImage: "house") {
+            Tab("Inicio", systemImage: "apple.homekit") {
                 NavigationStack {
                     if let habitVM {
                         HomeView(gamificationVM: $gamificationVM, habitVM: habitVM)
@@ -20,7 +20,7 @@ struct MainTabView: View {
                 .oruDefaultTint()
             }
 
-            Tab("Estadísticas", systemImage: "chart.bar") {
+            Tab("Estadísticas", systemImage: "waveform.mid") {
                 NavigationStack {
                     if let statsVM {
                         StatsView(viewModel: statsVM)
@@ -29,7 +29,7 @@ struct MainTabView: View {
                 .oruDefaultTint()
             }
 
-            Tab("Temporizador", systemImage: "timer") {
+            Tab("Temporizador", systemImage: "tachometer") {
                 Group {
                     if let timerVM {
                         TimerView(viewModel: timerVM)
