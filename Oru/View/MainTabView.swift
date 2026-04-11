@@ -13,15 +13,8 @@ struct MainTabView: View {
         TabView {
             Tab("Inicio", systemImage: "house") {
                 NavigationStack {
-                    HomeView(gamificationVM: $gamificationVM)
-                }
-                .oruDefaultTint()
-            }
-
-            Tab("Hábitos", systemImage: "checklist") {
-                NavigationStack {
                     if let habitVM {
-                        HabitListView(viewModel: habitVM)
+                        HomeView(gamificationVM: $gamificationVM, habitVM: habitVM)
                     }
                 }
                 .oruDefaultTint()

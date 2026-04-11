@@ -3,10 +3,13 @@ import SwiftData
 
 struct HomeView: View {
 
-    @Query private var users: [User]
-    @Environment(\.modelContext) private var modelContext
     @Binding var gamificationVM: GamificationViewModel?
+    var habitVM: HabitViewModel
     var illustrationOverride: String?
+
+    @Query private var users: [User]
+    @Query(sort: \Habit.creationDate, order: .reverse)
+    private var allHabits: [Habit]
 
     @AppStorage("hasSeenHomeIntroAnimation") private var hasSeenIntroAnimation = false
     @State private var animateContent = false
@@ -14,121 +17,266 @@ struct HomeView: View {
     @State private var revealOpacity: Double = 0
     @State private var imageOpacity: Double = 1
     @State private var showNextAlert = false
-    @State private var showProgressInfo = false
-    @State private var randomQuote: Quote?
+    @State private var showCreateForm = false
+    @State private var habitToEdit: Habit?
+    @State private var habitToDelete: Habit?
 
-    private var userName: String {
-        users.first?.name ?? ""
+    private var todayHabits: [Habit] {
+        let today = habitVM.currentWeekday()
+        return allHabits.filter { $0.status != .archived && $0.scheduledDays.contains(today) }
     }
 
-    private func todayFormatted() -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "es_ES")
-        formatter.dateFormat = "EEEE, d 'de' MMMM"
-        return formatter.string(from: .now).capitalized
+    private var otherHabits: [Habit] {
+        let today = habitVM.currentWeekday()
+        return allHabits.filter { $0.status != .archived && !$0.scheduledDays.contains(today) }
     }
 
-    var body: some View {
-        ZStack {
-
-            Color(.systemBackground)
-                .ignoresSafeArea()
-
-            VStack {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Hola, \(userName)!")
-                            .oruGreeting()
-                        Text(todayFormatted())
-                            .oruDateSubtitle()
-                    }
-                    Spacer()
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 16)
-
-                Spacer()
-
-                quoteSection
-
-                Spacer()
-
-                origamiImage
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 40)
-                    .opacity(animateContent ? 1 : 0)
-                    .onAppear(perform: playIntroAnimationIfNeeded)
-            }
-            .onAppear(perform: loadQuoteIfNeeded)
-
-            if let gvm = gamificationVM, gvm.currentOrigami != nil {
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        VStack(spacing: 8) {
-                            if gvm.isOrigamiCompleted && gvm.hasNextOrigamiAvailable {
-                                nextOrigamiButton
-                                    .transition(.opacity)
-                            }
-                            origamiProgressButton(progress: gvm.progressPercentage)
-                        }
-                    }
-                }
-                .padding(24)
-                .animation(.easeIn(duration: 0.5), value: gvm.isOrigamiCompleted)
-            }
-        }
+    private var hasNoHabits: Bool {
+        todayHabits.isEmpty && otherHabits.isEmpty
     }
 
     private var breathingActive: Bool {
         (gamificationVM?.hasPendingReveal ?? false) && revealingName == nil
     }
 
-    private func playIntroAnimationIfNeeded() {
-        guard !hasSeenIntroAnimation else {
-            animateContent = true
-            return
+    // MARK: - Body
+
+    var body: some View {
+        List {
+            origamiSection
+
+            summarySection
+
+            todaySection
+
+            if !otherHabits.isEmpty {
+                pausedSection
+            }
         }
-
-        withAnimation(.easeIn(duration: 2.5).delay(0.3)) {
-            animateContent = true
-        }
-        hasSeenIntroAnimation = true
-    }
-
-    private func loadQuoteIfNeeded() {
-        guard randomQuote == nil else { return }
-        randomQuote = try? UserRepository(modelContext: modelContext).fetchRandomQuote()
-    }
-
-    @ViewBuilder
-    private var quoteSection: some View {
-        if let quote = randomQuote {
-            ViewThatFits(in: .horizontal) {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text("\"\(quote.text)\"")
-                        .font(.system(size: 18, weight: .ultraLight, design: .serif)).italic()
-                    Text("— \(quote.source)")
-                        .font(.system(size: 14, weight: .regular, design: .serif))
-                }
-                VStack(spacing: 6) {
-                    Text("\"\(quote.text)\"")
-                        .font(.system(size: 18, weight: .ultraLight, design: .serif)).italic()
-                        .multilineTextAlignment(.center)
-                    Text("— \(quote.source)")
-                        .font(.system(size: 14, weight: .regular, design: .serif))
+        .listRowSpacing(10)
+        .contentMargins(.top, 0, for: .scrollContent)
+        .scrollDismissesKeyboard(.immediately)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showCreateForm = true
+                } label: {
+                    Image(systemName: "plus")
+                        .foregroundStyle(.secondary)
                 }
             }
-            .foregroundStyle(.secondary)
-            .opacity(0.9)
-            .padding(.horizontal, 32)
+        }
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .overlay(alignment: .topLeading) {
+            Text("Hola, \(users.first?.name ?? "")!")
+                .font(.system(size: 23, weight: .regular, design: .rounded))
+                .tracking(0.8)
+                .foregroundStyle(.secondary)
+                .padding(.leading, 30)
+                .padding(.top, -43)
+        }
+        .sheet(isPresented: $showCreateForm) {
+            HabitFormView(viewModel: habitVM)
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(item: $habitToEdit) { habit in
+            HabitFormView(viewModel: habitVM, habitToEdit: habit)
+                .presentationDragIndicator(.visible)
+        }
+        .alert(
+            "Eliminar hábito",
+            isPresented: Binding(
+                get: { habitToDelete != nil },
+                set: { if !$0 { habitToDelete = nil } }
+            )
+        ) {
+            Button("Eliminar", role: .destructive) {
+                if let habit = habitToDelete {
+                    habitVM.deleteHabit(habit)
+                }
+            }
+            Button("Cancelar", role: .cancel) { }
+        } message: {
+            Text("Se eliminará el hábito y todo su historial. Esta acción no se puede deshacer.")
+        }
+        .alert(
+            "¡Hábito consolidado! 🎉",
+            isPresented: Binding(
+                get: { habitVM.consolidatedHabit != nil },
+                set: { if !$0 { habitVM.consolidatedHabit = nil } }
+            )
+        ) {
+            Button("Aceptar") {
+                habitVM.consolidatedHabit = nil
+            }
+        } message: {
+            if let habit = habitVM.consolidatedHabit {
+                let intro = "¡Enhorabuena! \(habit.name) ya es parte de ti."
+                let detail = "Puedes mantenerlo en tu día a día o, cuando sientas"
+                    + " que ya no necesitas registrarlo,"
+                    + " deslízalo para archivarlo en tus estadísticas."
+                Text("\(intro) \(detail)")
+            }
+        }
+        .alert("¡Figura completada!", isPresented: $showNextAlert) {
+            Button("Comenzar") {
+                withAnimation(.easeOut(duration: 0.8)) {
+                    imageOpacity = 0
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    gamificationVM?.completeAndAssignNext()
+                    withAnimation(.easeIn(duration: 0.8)) {
+                        imageOpacity = 1
+                    }
+                }
+            }
+            Button("Seguir disfrutando", role: .cancel) { }
+        } message: {
+            Text("¿Quieres guardar esta figura en tu colección y comenzar un nuevo origami?")
         }
     }
+
+    // MARK: - Origami Section
+
+    private var origamiSection: some View {
+        Section {
+            ZStack(alignment: .bottomTrailing) {
+                origamiImage
+                    .frame(maxWidth: .infinity)
+
+                if let gvm = gamificationVM,
+                   gvm.currentOrigami != nil,
+                   gvm.isOrigamiCompleted,
+                   gvm.hasNextOrigamiAvailable {
+                    nextOrigamiButton
+                        .transition(.opacity)
+                }
+            }
+            .frame(height: 350)
+            .animation(.easeIn(duration: 0.5), value: gamificationVM?.isOrigamiCompleted)
+            .opacity(animateContent ? 1 : 0)
+            .onAppear(perform: playIntroAnimationIfNeeded)
+        }
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
+        .listSectionSeparator(.hidden)
+    }
+
+    // MARK: - Summary Section
+
+    private var summarySection: some View {
+        Section {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(todayDay())
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .tracking(0.8)
+                        .foregroundStyle(.secondary)
+                    Text(todayWeekday())
+                        .font(.system(size: 18, weight: .regular, design: .rounded))
+                        .tracking(0.8)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("\(Int(gamificationVM?.progressPercentage ?? 0))%")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .tracking(0.8)
+                        .foregroundStyle(.secondary)
+                    Text("Realizado")
+                        .font(.system(size: 18, weight: .regular, design: .rounded))
+                        .tracking(0.8)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
+        .listSectionSeparator(.hidden)
+        .listSectionSpacing(0)
+    }
+
+    // MARK: - Habit Sections
+
+    private var todaySection: some View {
+        Section {
+            if hasNoHabits {
+                noHabitsRow
+            } else if todayHabits.isEmpty {
+                todayEmptyRow
+            } else {
+                ForEach(todayHabits) { habit in
+                    TodayHabitRow(habit: habit, viewModel: habitVM)
+                        .oruConsolidationCard(
+                            progress: habitVM.consolidationProgress(for: habit)
+                        )
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button {
+                                habitToDelete = habit
+                            } label: {
+                                Label("Eliminar", systemImage: "trash")
+                            }
+                            .tint(.red)
+                            Button {
+                                habitToEdit = habit
+                            } label: {
+                                Label("Editar", systemImage: "pencil")
+                            }
+                            .tint(.oruPrimary)
+                            if habit.status == .consolidated {
+                                Button {
+                                    habitVM.archiveHabit(habit)
+                                } label: {
+                                    Label("Archivar", systemImage: "archivebox")
+                                }
+                                .tint(.orange)
+                            }
+                        }
+                }
+            }
+        } header: {
+            Text("Para hoy")
+                .font(.system(size: 16, weight: .medium, design: .rounded))
+                .tracking(0.8)
+        }
+    }
+
+    private var pausedSection: some View {
+        Section {
+            ForEach(otherHabits) { habit in
+                HabitRow(habit: habit, today: habitVM.currentWeekday())
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button {
+                            habitToDelete = habit
+                        } label: {
+                            Label("Eliminar", systemImage: "trash")
+                        }
+                        .tint(.red)
+                        Button {
+                            habitToEdit = habit
+                        } label: {
+                            Label("Editar", systemImage: "pencil")
+                        }
+                        .tint(.oruPrimary)
+                    }
+            }
+        } header: {
+            Text("En pausa")
+                .font(.system(size: 16, weight: .medium, design: .rounded))
+                .tracking(0.8)
+        }
+    }
+
+    // MARK: - Origami Components
 
     @ViewBuilder
     private var origamiImage: some View {
-        let currentName = illustrationOverride ?? gamificationVM?.currentIllustrationName ?? "mariposa"
+        let currentName = illustrationOverride
+            ?? gamificationVM?.currentIllustrationName
+            ?? "mariposa"
 
         ZStack {
             Image(currentName)
@@ -163,25 +311,6 @@ struct HomeView: View {
                 }
             }
         }
-        .alert(
-            "¡Figura completada!",
-            isPresented: $showNextAlert
-        ) {
-            Button("Comenzar") {
-                withAnimation(.easeOut(duration: 0.8)) {
-                    imageOpacity = 0
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                    gamificationVM?.completeAndAssignNext()
-                    withAnimation(.easeIn(duration: 0.8)) {
-                        imageOpacity = 1
-                    }
-                }
-            }
-            Button("Seguir disfrutando", role: .cancel) { }
-        } message: {
-            Text("¿Quieres guardar esta figura en tu colección y comenzar un nuevo origami?")
-        }
     }
 
     private var nextOrigamiButton: some View {
@@ -196,76 +325,309 @@ struct HomeView: View {
         .glassEffect(.regular, in: .circle)
     }
 
-    private func origamiProgressButton(progress: Double) -> some View {
-        let lineWidth: CGFloat = 3
-        let inset = lineWidth / 2
+    // MARK: - Empty & Rest States
 
-        return ZStack {
-            Circle()
-                .strokeBorder(Color.secondary.opacity(0.2), lineWidth: lineWidth)
+    private var noHabitsRow: some View {
+        HStack(spacing: 10) {
+            Text("👋🏼")
+                .font(.system(size: 22))
 
-            Circle()
-                .trim(from: 0, to: progress / 100)
-                .stroke(Color.oruPrimary, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-                .padding(inset)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Sin hábitos aún")
+                    .oruTextPrimary()
 
-            Text("\(Int(progress))%")
-                .oruPillCircle()
-                .foregroundStyle(Color.oruPrimary)
+                Text("Construye tu rutina creando tu primer hábito.")
+                    .oruTextSecondary()
+            }
         }
-        .frame(width: 50, height: 50)
-        .glassEffect(.regular, in: .circle)
-        .onTapGesture { showProgressInfo = true }
-        .popover(isPresented: $showProgressInfo, arrowEdge: .trailing) {
-            Text("Al alcanzar cada umbral, la figura palpitará"
-                 + " y puedes pulsarla para revelar una nueva fase ✨.")
-                .oruTip()
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(width: 240)
-                .padding()
-                .presentationCompactAdaptation(.popover)
+        .padding(.vertical, 8)
+    }
+
+    private var todayEmptyRow: some View {
+        HStack(spacing: 10) {
+            Text("😌")
+                .font(.system(size: 22))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Día de descanso")
+                    .oruTextPrimary()
+
+                Text("Recarga energía y disfruta de tu tiempo.")
+                    .oruTextSecondary()
+            }
+        }
+        .padding(.vertical, 8)
+    }
+
+    // MARK: - Helpers
+
+    private func playIntroAnimationIfNeeded() {
+        guard !hasSeenIntroAnimation else {
+            animateContent = true
+            return
+        }
+        withAnimation(.easeIn(duration: 2.5).delay(0.3)) {
+            animateContent = true
+        }
+        hasSeenIntroAnimation = true
+    }
+}
+
+// MARK: - TodayHabitRow
+
+private struct TodayHabitRow: View {
+
+    let habit: Habit
+    var viewModel: HabitViewModel
+
+    var body: some View {
+        switch habit.type {
+        case .boolean:
+            BooleanHabitRow(habit: habit, viewModel: viewModel)
+        case .quantity:
+            QuantityHabitRow(habit: habit, viewModel: viewModel)
         }
     }
 }
+
+// MARK: - BooleanHabitRow
+
+private struct BooleanHabitRow: View {
+
+    let habit: Habit
+    var viewModel: HabitViewModel
+
+    private var isCompleted: Bool {
+        viewModel.todayCompliance(for: habit)?.completed ?? false
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Button {
+                viewModel.toggleBoolean(for: habit)
+            } label: {
+                Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 26))
+                    .foregroundStyle(
+                        isCompleted
+                            ? Color.oruPrimary.opacity(0.8)
+                            : Color.secondary.opacity(0.35)
+                    )
+                    .contentTransition(.symbolEffect(.replace))
+                    .sensoryFeedback(.success, trigger: isCompleted)
+            }
+            .buttonStyle(.plain)
+            .frame(width: 28)
+
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 8) {
+                    Text(habit.icon)
+                        .font(.system(size: 16))
+
+                    Text(habit.name)
+                        .oruTextPrimary()
+                        .lineLimit(1)
+                        .strikethrough(isCompleted)
+                        .foregroundStyle(isCompleted ? .secondary : .primary)
+                }
+
+                if let note = habit.note, !note.isEmpty {
+                    Text(note)
+                        .oruTextSecondary()
+                        .lineLimit(1)
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: - QuantityHabitRow
+
+private struct QuantityHabitRow: View {
+
+    let habit: Habit
+    var viewModel: HabitViewModel
+
+    @State private var isEntering = false
+    @State private var inputText = ""
+    @FocusState private var isFocused: Bool
+
+    private var todayCompliance: Compliance? {
+        viewModel.todayCompliance(for: habit)
+    }
+
+    private var hasRecordedAmount: Bool {
+        todayCompliance?.recordedAmount != nil && todayCompliance?.recordedAmount != 0
+    }
+
+    private var isCompleted: Bool {
+        todayCompliance?.completed ?? false
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
+                Button {
+                    if isEntering {
+                        save()
+                    } else {
+                        inputText = (todayCompliance?.recordedAmount ?? 0).formatted
+                        isEntering = true
+                    }
+                } label: {
+                    Image(systemName: isEntering
+                          ? "checkmark.circle.fill" : "plus.circle.fill")
+                        .font(.system(size: 26))
+                        .foregroundStyle(
+                            isEntering || hasRecordedAmount
+                                ? Color.oruPrimary.opacity(0.8)
+                                : Color.secondary.opacity(0.35)
+                        )
+                        .contentTransition(.symbolEffect(.replace))
+                        .sensoryFeedback(.success, trigger: hasRecordedAmount)
+                }
+                .buttonStyle(.plain)
+                .frame(width: 28)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 8) {
+                        Text(habit.icon)
+                            .font(.system(size: 16))
+
+                        Text(habit.name)
+                            .oruTextPrimary()
+                            .lineLimit(1)
+                            .strikethrough(isCompleted)
+                            .foregroundStyle(isCompleted ? .secondary : .primary)
+                    }
+
+                    if let note = habit.note, !note.isEmpty {
+                        Text(note)
+                            .oruTextSecondary()
+                            .lineLimit(1)
+                    }
+                }
+
+                Spacer()
+
+                progressLabel
+            }
+            .padding(.vertical, 4)
+
+            if isEntering {
+                HStack(spacing: 8) {
+                    TextField("0", text: $inputText)
+                        .keyboardType(.decimalPad)
+                        .focused($isFocused)
+                        .oruTextPrimary()
+                        .onChange(of: inputText) { _, newValue in
+                            inputText = String(newValue.prefix(Habit.maxGoalLength))
+                        }
+
+                    if let unit = habit.unit {
+                        Text(unit.name)
+                            .oruTextSecondary()
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .glassEffect(.regular, in: .rect(cornerRadius: 10))
+                .padding(.leading, 40)
+                .task { isFocused = true }
+            }
+        }
+        .animation(.easeOut(duration: 0.2), value: isEntering)
+        .onChange(of: isFocused) { _, focused in
+            if !focused && isEntering { isEntering = false }
+        }
+    }
+
+    private func save() {
+        let normalized = inputText.replacingOccurrences(of: ",", with: ".")
+        let value = Double(normalized) ?? 0
+        viewModel.recordAmount(value, for: habit)
+        isEntering = false
+        isFocused = false
+    }
+
+    private var progressLabel: some View {
+        let amount = (todayCompliance?.recordedAmount ?? 0).formatted
+        let text: String
+
+        if let goal = habit.dailyGoal {
+            let suffix = habit.unit.map { " \($0.name)" } ?? ""
+            text = "\(amount) / \(goal.formatted)\(suffix)"
+        } else {
+            text = habit.unit.map { "\(amount) \($0.name)" } ?? amount
+        }
+
+        return Text(text)
+            .oruPillCircle()
+            .foregroundStyle(
+                hasRecordedAmount
+                    ? Color.oruPrimary.opacity(0.8)
+                    : Color.secondary.opacity(0.35)
+            )
+    }
+}
+
+// MARK: - HabitRow (En pausa)
+
+private struct HabitRow: View {
+
+    let habit: Habit
+    let today: Habit.Weekday
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Text(habit.icon)
+                .font(.system(size: 19))
+                .frame(width: 28)
+
+            Text(habit.name)
+                .oruTextPrimary()
+                .lineLimit(1)
+
+            Spacer()
+
+            HStack(spacing: 6) {
+                ForEach(Habit.Weekday.allCases, id: \.self) { day in
+                    Text(day.shortLabel)
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundStyle(dayColor(day: day))
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func dayColor(day: Habit.Weekday) -> Color {
+        guard habit.scheduledDays.contains(day) else {
+            return .secondary.opacity(0.3)
+        }
+        return day == today ? .oruPrimary : .primary
+    }
+}
+
+// MARK: - Preview
 
 #Preview(traits: .sampleData) {
     @Previewable @Environment(\.modelContext) var context
     @Previewable @State var gamificationVM: GamificationViewModel?
 
     NavigationStack {
-        ZStack {
-            HomeView(gamificationVM: $gamificationVM)
-
-            VStack {
-                Spacer()
-                HStack(spacing: 16) {
-                    Button("-5%") {
-                        gamificationVM?.currentOrigami?.progressPercentage = max(
-                            (gamificationVM?.progressPercentage ?? 0) - 5, 0
-                        )
-                    }
-                    Button("+5%") {
-                        let ceiling = gamificationVM?.nextPhaseThreshold ?? 100
-                        gamificationVM?.currentOrigami?.progressPercentage = min(
-                            (gamificationVM?.progressPercentage ?? 0) + 5, ceiling
-                        )
-                    }
-                    Button("100%") {
-                        guard let uo = gamificationVM?.currentOrigami,
-                              let total = uo.origami?.numberOfPhases else { return }
-                        uo.revealedPhase = total - 1
-                        uo.progressPercentage = 100
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                .padding(.bottom, 30)
-            }
-        }
+        HomeView(
+            gamificationVM: $gamificationVM,
+            habitVM: HabitViewModel(
+                repository: HabitRepository(modelContext: context)
+            )
+        )
     }
     .onAppear {
-        let gvm = GamificationViewModel(origamiRepository: OrigamiRepository(modelContext: context))
+        let gvm = GamificationViewModel(
+            origamiRepository: OrigamiRepository(modelContext: context)
+        )
         gvm.loadOrigami()
         gamificationVM = gvm
     }
