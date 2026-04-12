@@ -11,8 +11,6 @@ struct HomeView: View {
     @Query(sort: \Habit.creationDate, order: .reverse)
     private var allHabits: [Habit]
 
-    @AppStorage("hasSeenHomeIntroAnimation") private var hasSeenIntroAnimation = false
-    @State private var animateContent = false
     @State private var revealingName: String?
     @State private var revealOpacity: Double = 0
     @State private var imageOpacity: Double = 1
@@ -45,7 +43,6 @@ struct HomeView: View {
     var body: some View {
         ZStack(alignment: .top) {
             origamiHero
-                // .offset(y: 10)
 
             HomeTray(detent: $trayDetent) {
                 summaryHeader
@@ -144,19 +141,19 @@ struct HomeView: View {
             origamiImage
                 .frame(maxWidth: .infinity)
 
-            if let gvm = gamificationVM,
-               gvm.currentOrigami != nil,
-               gvm.isOrigamiCompleted,
-               gvm.hasNextOrigamiAvailable {
-                nextOrigamiButton
-                    .transition(.opacity)
-                    .padding(.trailing, 24)
+            Group {
+                if let gvm = gamificationVM,
+                   gvm.currentOrigami != nil,
+                   gvm.isOrigamiCompleted,
+                   gvm.hasNextOrigamiAvailable {
+                    nextOrigamiButton
+                        .transition(.opacity)
+                        .padding(.trailing, 24)
+                }
             }
+            .animation(.easeIn(duration: 0.5), value: gamificationVM?.isOrigamiCompleted)
         }
         .frame(height: 400)
-        .animation(.easeIn(duration: 0.5), value: gamificationVM?.isOrigamiCompleted)
-        .opacity(animateContent ? 1 : 0)
-        .onAppear(perform: playIntroAnimationIfNeeded)
     }
 
     // MARK: - Summary Header
@@ -235,6 +232,7 @@ struct HomeView: View {
             Text("Para hoy")
                 .font(.system(size: 16, weight: .medium, design: .rounded))
                 .tracking(0.8)
+                .listRowInsets(EdgeInsets(top: 8, leading: 6, bottom: 10, trailing: 20))
         }
     }
 
@@ -262,6 +260,7 @@ struct HomeView: View {
             Text("En pausa")
                 .font(.system(size: 16, weight: .medium, design: .rounded))
                 .tracking(0.8)
+                .listRowInsets(EdgeInsets(top: 8, leading: 6, bottom: 10, trailing: 20))
         }
     }
 
@@ -352,19 +351,6 @@ struct HomeView: View {
             }
         }
         .padding(.vertical, 8)
-    }
-
-    // MARK: - Helpers
-
-    private func playIntroAnimationIfNeeded() {
-        guard !hasSeenIntroAnimation else {
-            animateContent = true
-            return
-        }
-        withAnimation(.easeIn(duration: 2.5).delay(0.3)) {
-            animateContent = true
-        }
-        hasSeenIntroAnimation = true
     }
 }
 

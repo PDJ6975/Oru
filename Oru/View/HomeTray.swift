@@ -112,7 +112,9 @@ struct HomeTray<Header: View, Content: View>: View {
     // MARK: - Gestures
 
     private func dragGesture(baseHeight: CGFloat, container: CGFloat) -> some Gesture {
-        DragGesture(minimumDistance: 2)
+        // coordinateSpace .global evita que el origen del gesto se mueva junto con
+        // el dragHeader cuando la bandeja crece
+        DragGesture(minimumDistance: 2, coordinateSpace: .global)
             .onChanged { value in
                 dragOffset = value.translation.height
             }
