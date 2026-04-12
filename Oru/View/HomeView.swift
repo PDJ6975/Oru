@@ -148,7 +148,8 @@ struct HomeView: View {
                    gvm.hasNextOrigamiAvailable {
                     nextOrigamiButton
                         .transition(.opacity)
-                        .padding(.trailing, 24)
+                        .padding(.trailing, 15)
+                        .padding(.bottom, 350)
                 }
             }
             .animation(.easeIn(duration: 0.5), value: gamificationVM?.isOrigamiCompleted)
@@ -604,6 +605,18 @@ private struct HabitRow: View {
                 repository: HabitRepository(modelContext: context)
             )
         )
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    guard let gvm = gamificationVM,
+                          let userOrigami = gvm.currentOrigami else { return }
+                    userOrigami.progressPercentage = gvm.nextPhaseThreshold ?? 100
+                } label: {
+                    Image(systemName: "bolt.fill")
+                        .foregroundStyle(.orange)
+                }
+            }
+        }
     }
     .onAppear {
         let gvm = GamificationViewModel(

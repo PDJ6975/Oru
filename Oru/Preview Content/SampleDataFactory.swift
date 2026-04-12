@@ -222,6 +222,15 @@ enum SampleDataFactory {
         uoFlor.revealedPhase = 2
         uoFlor.progressPercentage = 40
         context.insert(uoFlor)
+
+        // Origami disponible en catálogo para probar el cambio de origami
+        let bailarina = Origami(name: "bailarina", numberOfPhases: 6)
+        context.insert(bailarina)
+        for phase in 0..<6 {
+            let op = OrigamiPhase(phaseNumber: phase, illustrationName: "bailarina_fase\(phase)")
+            op.origami = bailarina
+            context.insert(op)
+        }
     }
 
     // MARK: - Setup completo
