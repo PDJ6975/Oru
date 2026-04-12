@@ -17,7 +17,7 @@ struct HomeView: View {
     @State private var revealOpacity: Double = 0
     @State private var imageOpacity: Double = 1
     @State private var showNextAlert = false
-    @State private var scrollOffset: CGFloat = 0
+    @State private var trayDetent: HomeTrayDetent = .peek
     @State private var showCreateForm = false
     @State private var habitToEdit: Habit?
     @State private var habitToDelete: Habit?
@@ -45,39 +45,15 @@ struct HomeView: View {
     var body: some View {
         ZStack(alignment: .top) {
             origamiHero
-                .offset(y: 250)
+                // .offset(y: 10)
 
-            UnevenRoundedRectangle(
-                topLeadingRadius: 28,
-                topTrailingRadius: 28
-            )
-            .fill(.ultraThinMaterial)
-            .frame(height: 1200)
-            .offset(y: 670 - scrollOffset)
-
-            List {
-                Color.clear
-                    .frame(height: 650)
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-                    .listSectionSeparator(.hidden)
-
-                summarySection
-
+            HomeTray(detent: $trayDetent) {
+                summaryHeader
+            } content: {
                 todaySection
-
                 if !otherHabits.isEmpty {
                     pausedSection
                 }
-            }
-            .listRowSpacing(15)
-            .contentMargins(.top, 0, for: .scrollContent)
-            .scrollDismissesKeyboard(.immediately)
-            .scrollContentBackground(.hidden)
-            .onScrollGeometryChange(for: CGFloat.self) { geo in
-                geo.contentOffset.y
-            } action: { _, newValue in
-                scrollOffset = newValue
             }
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -98,7 +74,7 @@ struct HomeView: View {
                 .tracking(0.8)
                 .foregroundStyle(.secondary)
                 .padding(.leading, 30)
-                .padding(.top, 200)
+                .padding(.top, -40)
         }
         .sheet(isPresented: $showCreateForm) {
             HabitFormView(viewModel: habitVM)
@@ -183,40 +159,37 @@ struct HomeView: View {
         .onAppear(perform: playIntroAnimationIfNeeded)
     }
 
-    // MARK: - Summary Section
+    // MARK: - Summary Header
 
-    private var summarySection: some View {
-        Section {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(todayDay())
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .tracking(0.8)
-                        .foregroundStyle(.secondary)
-                    Text(todayWeekday())
-                        .font(.system(size: 18, weight: .regular, design: .rounded))
-                        .tracking(0.8)
-                        .foregroundStyle(.secondary)
-                }
+    private var summaryHeader: some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(todayDay())
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .tracking(0.8)
+                    .foregroundStyle(.secondary)
+                Text(todayWeekday())
+                    .font(.system(size: 18, weight: .regular, design: .rounded))
+                    .tracking(0.8)
+                    .foregroundStyle(.secondary)
+            }
 
-                Spacer()
+            Spacer()
 
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text("\(Int(gamificationVM?.progressPercentage ?? 0))%")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .tracking(0.8)
-                        .foregroundStyle(.secondary)
-                    Text("Realizado")
-                        .font(.system(size: 18, weight: .regular, design: .rounded))
-                        .tracking(0.8)
-                        .foregroundStyle(.secondary)
-                }
+            VStack(alignment: .trailing, spacing: 4) {
+                Text("\(Int(gamificationVM?.progressPercentage ?? 0))%")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .tracking(0.8)
+                    .foregroundStyle(.secondary)
+                Text("Realizado")
+                    .font(.system(size: 18, weight: .regular, design: .rounded))
+                    .tracking(0.8)
+                    .foregroundStyle(.secondary)
             }
         }
-        .listRowSeparator(.hidden)
-        .listRowBackground(Color.clear)
-        .listSectionSeparator(.hidden)
-        .listSectionSpacing(0)
+        .padding(.horizontal, 20)
+        .padding(.top, 4)
+        .padding(.bottom, 12)
     }
 
     // MARK: - Habit Sections
