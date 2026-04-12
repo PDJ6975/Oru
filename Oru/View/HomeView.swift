@@ -17,6 +17,7 @@ struct HomeView: View {
     @State private var revealOpacity: Double = 0
     @State private var imageOpacity: Double = 1
     @State private var showNextAlert = false
+    @State private var scrollOffset: CGFloat = 0
     @State private var showCreateForm = false
     @State private var habitToEdit: Habit?
     @State private var habitToDelete: Habit?
@@ -42,20 +43,43 @@ struct HomeView: View {
     // MARK: - Body
 
     var body: some View {
-        List {
-            origamiSection
+        ZStack(alignment: .top) {
+            origamiHero
+                .offset(y: 250)
 
-            summarySection
+            UnevenRoundedRectangle(
+                topLeadingRadius: 28,
+                topTrailingRadius: 28
+            )
+            .fill(.ultraThinMaterial)
+            .frame(height: 1200)
+            .offset(y: 670 - scrollOffset)
 
-            todaySection
+            List {
+                Color.clear
+                    .frame(height: 650)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listSectionSeparator(.hidden)
 
-            if !otherHabits.isEmpty {
-                pausedSection
+                summarySection
+
+                todaySection
+
+                if !otherHabits.isEmpty {
+                    pausedSection
+                }
+            }
+            .listRowSpacing(15)
+            .contentMargins(.top, 0, for: .scrollContent)
+            .scrollDismissesKeyboard(.immediately)
+            .scrollContentBackground(.hidden)
+            .onScrollGeometryChange(for: CGFloat.self) { geo in
+                geo.contentOffset.y
+            } action: { _, newValue in
+                scrollOffset = newValue
             }
         }
-        .listRowSpacing(15)
-        .contentMargins(.top, 0, for: .scrollContent)
-        .scrollDismissesKeyboard(.immediately)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -74,7 +98,7 @@ struct HomeView: View {
                 .tracking(0.8)
                 .foregroundStyle(.secondary)
                 .padding(.leading, 30)
-                .padding(.top, -43)
+                .padding(.top, 200)
         }
         .sheet(isPresented: $showCreateForm) {
             HabitFormView(viewModel: habitVM)
@@ -137,30 +161,26 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - Origami Section
+    // MARK: - Origami Hero
 
-    private var origamiSection: some View {
-        Section {
-            ZStack(alignment: .bottomTrailing) {
-                origamiImage
-                    .frame(maxWidth: .infinity)
+    private var origamiHero: some View {
+        ZStack(alignment: .bottomTrailing) {
+            origamiImage
+                .frame(maxWidth: .infinity)
 
-                if let gvm = gamificationVM,
-                   gvm.currentOrigami != nil,
-                   gvm.isOrigamiCompleted,
-                   gvm.hasNextOrigamiAvailable {
-                    nextOrigamiButton
-                        .transition(.opacity)
-                }
+            if let gvm = gamificationVM,
+               gvm.currentOrigami != nil,
+               gvm.isOrigamiCompleted,
+               gvm.hasNextOrigamiAvailable {
+                nextOrigamiButton
+                    .transition(.opacity)
+                    .padding(.trailing, 24)
             }
-            .frame(height: 400)
-            .animation(.easeIn(duration: 0.5), value: gamificationVM?.isOrigamiCompleted)
-            .opacity(animateContent ? 1 : 0)
-            .onAppear(perform: playIntroAnimationIfNeeded)
         }
-        .listRowSeparator(.hidden)
-        .listRowBackground(Color.clear)
-        .listSectionSeparator(.hidden)
+        .frame(height: 400)
+        .animation(.easeIn(duration: 0.5), value: gamificationVM?.isOrigamiCompleted)
+        .opacity(animateContent ? 1 : 0)
+        .onAppear(perform: playIntroAnimationIfNeeded)
     }
 
     // MARK: - Summary Section
