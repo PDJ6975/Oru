@@ -6,7 +6,10 @@ final class OruUITests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false
-        app.launchArguments += ["-hasCompletedOnboarding", "true"]
+    }
+
+    private func launchWithOnboardingDone() {
+        app.launchArguments = ["-hasCompletedOnboarding", "true"]
         app.launch()
     }
 
@@ -50,7 +53,40 @@ final class OruUITests: XCTestCase {
     // MARK: - Tests
 
     @MainActor
+    func testOnboardingFlow() throws {
+        let freshApp = XCUIApplication()
+        freshApp.launchArguments = ["-resetOnboarding"]
+        freshApp.launch()
+
+        // ── Welcome ──
+        XCTAssertTrue(
+            freshApp.staticTexts["Da forma a tu mejor versión"].waitForExistence(timeout: 5),
+            "La pantalla de bienvenida debe mostrarse"
+        )
+        freshApp.buttons["Empezar ahora"].firstMatch.tap()
+
+        // ── Registro de nombre ──
+        let nameField = freshApp.textFields["Tu nombre"].firstMatch
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5), "La pantalla de registro debe mostrarse")
+        
+        
+        nameField.tap()
+        nameField.typeText("Test")
+
+        let continueButton = freshApp.buttons["Continuar"].firstMatch
+        XCTAssertTrue(continueButton.waitForExistence(timeout: 5), "El botón Continuar debe existir")
+        continueButton.tap()
+
+        // ── Home ──
+        XCTAssertTrue(
+            freshApp.staticTexts["Para hoy"].waitForExistence(timeout: 5),
+            "Debe llegar a la pantalla de inicio tras el onboarding"
+        )
+    }
+
+    @MainActor
     func testMainScreensNavigation() throws {
+        launchWithOnboardingDone()
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(tabBar.waitForExistence(timeout: 5), "La tab bar debe ser visible tras el arranque")
 
@@ -73,6 +109,7 @@ final class OruUITests: XCTestCase {
 
     @MainActor
     func testBooleanHabitFullFlow() throws {
+        launchWithOnboardingDone()
         // ── Crear ──
         openCreationForm(name: "prueba")
         app.buttons["sab"].firstMatch.tap()
@@ -123,6 +160,7 @@ final class OruUITests: XCTestCase {
 
     @MainActor
     func testQuantityHabitWithCustomUnit() throws {
+        launchWithOnboardingDone()
         // ── Crear con unidad personalizada ──
         openCreationForm(name: "lectura")
         app.buttons["Cantidad"].firstMatch.tap()
@@ -180,6 +218,7 @@ final class OruUITests: XCTestCase {
 
     @MainActor
     func testQuantityHabitWithTimerFlow() throws {
+        launchWithOnboardingDone()
         // ── Crear hábito con unidad de tiempo ──
         openCreationForm(name: "tiempo")
         app.buttons["Cantidad"].firstMatch.tap()

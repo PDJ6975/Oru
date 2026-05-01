@@ -23,6 +23,10 @@ struct OruApp: App {
     }()
 
     init() {
+        if CommandLine.arguments.contains("-resetOnboarding") {
+            UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
+        }
+
         let context = sharedModelContainer.mainContext
         let habitRepository = HabitRepository(modelContext: context)
         try? habitRepository.seedBaseUnitsIfNeeded()
