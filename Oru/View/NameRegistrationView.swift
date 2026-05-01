@@ -94,12 +94,9 @@ private extension NameRegistrationView {
 private extension NameRegistrationView {
     func attemptRegistration() {
         guard viewModel.isNameValid else { return }
-        withAnimation {
-            isNameFocused = false
-        } completion: {
-            if viewModel.registerUser() {
-                onRegistered()
-            }
+        isNameFocused = false
+        if viewModel.registerUser() {
+            onRegistered()
         }
     }
 }

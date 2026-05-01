@@ -25,6 +25,13 @@
 			remoteGlobalIDString = 3B15ED4F2F82738C004694AA;
 			remoteInfo = OruTimerWidgetExtension;
 		};
+		3BAD71D22FA4C76200F8F8A5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3BC17C2F2F543B7D009DD857 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3BC17C362F543B7D009DD857;
+			remoteInfo = Oru;
+		};
 		3BC17C472F543B7E009DD857 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3BC17C2F2F543B7D009DD857 /* Project object */;
@@ -58,8 +65,10 @@
 		3B33C4942F56124C007880A3 /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 		3B33C4952F56124C007880A3 /* sonar-project.properties */ = {isa = PBXFileReference; lastKnownFileType = text; path = "sonar-project.properties"; sourceTree = "<group>"; };
 		3B7971AE2F56E17800BE27D3 /* cd.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = cd.yml; sourceTree = "<group>"; };
+		3BAD71CC2FA4C76200F8F8A5 /* OruUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OruUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3BC17C372F543B7D009DD857 /* Oru.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Oru.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3BC17C462F543B7E009DD857 /* OruTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OruTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3BF0AB542F90DDAD003B5DAF /* Oru.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Oru.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -90,6 +99,11 @@
 			path = OruTimerWidget;
 			sourceTree = "<group>";
 		};
+		3BAD71CD2FA4C76200F8F8A5 /* OruUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = OruUITests;
+			sourceTree = "<group>";
+		};
 		3BC17C392F543B7D009DD857 /* Oru */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -112,6 +126,13 @@
 			files = (
 				3B15ED552F82738D004694AA /* SwiftUI.framework in Frameworks */,
 				3B15ED532F82738C004694AA /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3BAD71C92FA4C76200F8F8A5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -166,6 +187,7 @@
 		3BC17C2E2F543B7D009DD857 = {
 			isa = PBXGroup;
 			children = (
+				3BF0AB542F90DDAD003B5DAF /* Oru.xctestplan */,
 				3B0058EE2F6EC36700BAA9FB /* Oru.xcodeproj */,
 				3B33C4932F56124C007880A3 /* .github */,
 				3B33C4942F56124C007880A3 /* .swiftlint.yml */,
@@ -174,6 +196,7 @@
 				3BC17C392F543B7D009DD857 /* Oru */,
 				3BC17C492F543B7E009DD857 /* OruTests */,
 				3B15ED562F82738D004694AA /* OruTimerWidget */,
+				3BAD71CD2FA4C76200F8F8A5 /* OruUITests */,
 				3B15ED512F82738C004694AA /* Frameworks */,
 				3BC17C382F543B7D009DD857 /* Products */,
 			);
@@ -185,6 +208,7 @@
 				3BC17C372F543B7D009DD857 /* Oru.app */,
 				3BC17C462F543B7E009DD857 /* OruTests.xctest */,
 				3B15ED502F82738C004694AA /* OruTimerWidgetExtension.appex */,
+				3BAD71CC2FA4C76200F8F8A5 /* OruUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -213,6 +237,29 @@
 			productName = OruTimerWidgetExtension;
 			productReference = 3B15ED502F82738C004694AA /* OruTimerWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
+		};
+		3BAD71CB2FA4C76200F8F8A5 /* OruUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3BAD71D62FA4C76200F8F8A5 /* Build configuration list for PBXNativeTarget "OruUITests" */;
+			buildPhases = (
+				3BAD71C82FA4C76200F8F8A5 /* Sources */,
+				3BAD71C92FA4C76200F8F8A5 /* Frameworks */,
+				3BAD71CA2FA4C76200F8F8A5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3BAD71D32FA4C76200F8F8A5 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				3BAD71CD2FA4C76200F8F8A5 /* OruUITests */,
+			);
+			name = OruUITests;
+			packageProductDependencies = (
+			);
+			productName = OruUITests;
+			productReference = 3BAD71CC2FA4C76200F8F8A5 /* OruUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 		3BC17C362F543B7D009DD857 /* Oru */ = {
 			isa = PBXNativeTarget;
@@ -275,6 +322,10 @@
 					3B15ED4F2F82738C004694AA = {
 						CreatedOnToolsVersion = 26.1.1;
 					};
+					3BAD71CB2FA4C76200F8F8A5 = {
+						CreatedOnToolsVersion = 26.1.1;
+						TestTargetID = 3BC17C362F543B7D009DD857;
+					};
 					3BC17C362F543B7D009DD857 = {
 						CreatedOnToolsVersion = 26.1.1;
 					};
@@ -307,12 +358,20 @@
 				3BC17C362F543B7D009DD857 /* Oru */,
 				3BC17C452F543B7E009DD857 /* OruTests */,
 				3B15ED4F2F82738C004694AA /* OruTimerWidgetExtension */,
+				3BAD71CB2FA4C76200F8F8A5 /* OruUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		3B15ED4E2F82738C004694AA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3BAD71CA2FA4C76200F8F8A5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -370,6 +429,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3BAD71C82FA4C76200F8F8A5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3BC17C332F543B7D009DD857 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -391,6 +457,11 @@
 			isa = PBXTargetDependency;
 			target = 3B15ED4F2F82738C004694AA /* OruTimerWidgetExtension */;
 			targetProxy = 3B15ED622F82738E004694AA /* PBXContainerItemProxy */;
+		};
+		3BAD71D32FA4C76200F8F8A5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3BC17C362F543B7D009DD857 /* Oru */;
+			targetProxy = 3BAD71D22FA4C76200F8F8A5 /* PBXContainerItemProxy */;
 		};
 		3BC17C482F543B7E009DD857 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -461,6 +532,48 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		3BAD71D42FA4C76200F8F8A5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2KGM56VF9U;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.antoniorodriguez.OruUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Oru;
+			};
+			name = Debug;
+		};
+		3BAD71D52FA4C76200F8F8A5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2KGM56VF9U;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.antoniorodriguez.OruUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Oru;
 			};
 			name = Release;
 		};
@@ -711,6 +824,15 @@
 			buildConfigurations = (
 				3B15ED662F82738E004694AA /* Debug */,
 				3B15ED672F82738E004694AA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3BAD71D62FA4C76200F8F8A5 /* Build configuration list for PBXNativeTarget "OruUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3BAD71D42FA4C76200F8F8A5 /* Debug */,
+				3BAD71D52FA4C76200F8F8A5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
