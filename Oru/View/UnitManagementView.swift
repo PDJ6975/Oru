@@ -66,6 +66,7 @@ struct UnitManagementView: View {
                                     }
                                     .tint(.oruPrimary)
                                 }
+                                .labelStyle(.iconOnly)
                         }
 
                         if canAddMore {
@@ -78,7 +79,6 @@ struct UnitManagementView: View {
                     }
                 }
             .scrollDismissesKeyboard(.immediately)
-            .onTapGesture { isAddFieldFocused = false }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {

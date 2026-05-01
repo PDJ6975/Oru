@@ -25,7 +25,7 @@ struct HabitFormView: View {
     @State private var iconSelection: TextSelection?
     @State private var name = ""
     @State private var selectedDays: Set<Habit.Weekday> = Set(Habit.Weekday.allCases)
-    @State private var habitType: Habit.HabitType = .boolean
+    @State private var habitType: Habit.HabitType
     @State private var dailyGoal = ""
     @State private var selectedUnit: Unit?
     @State private var note = ""
@@ -35,6 +35,12 @@ struct HabitFormView: View {
     @State private var showUnitManagement = false
 
     private var isEditing: Bool { habitToEdit != nil }
+
+    init(viewModel: HabitViewModel, habitToEdit: Habit? = nil) {
+        self.viewModel = viewModel
+        self.habitToEdit = habitToEdit
+        _habitType = State(initialValue: habitToEdit?.type ?? .boolean)
+    }
 
     @FocusState private var focusedField: Field?
 

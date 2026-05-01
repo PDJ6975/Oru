@@ -1,0 +1,39 @@
+{
+  "configurations" : [
+    {
+      "id" : "EBBB6121-D97B-45AC-AA6B-676186CDD5D1",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:Oru.xcodeproj",
+          "identifier" : "3BC17C362F543B7D009DD857",
+          "name" : "Oru"
+        }
+      ]
+    },
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Oru.xcodeproj",
+      "identifier" : "3BC17C362F543B7D009DD857",
+      "name" : "Oru"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:Oru.xcodeproj",
+        "identifier" : "3BC17C452F543B7E009DD857",
+        "name" : "OruTests"
+      }
+    }
+  ],
+  "version" : 1
+}
