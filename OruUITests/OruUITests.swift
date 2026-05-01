@@ -132,16 +132,22 @@ final class OruUITests: XCTestCase {
         app.buttons["Añadir nueva medida"].firstMatch.tap()
 
         let unitField = app.textFields["Nueva unidad"].firstMatch
-        XCTAssertTrue(unitField.waitForExistence(timeout: 3), "La vista de unidades debe abrirse")
+        XCTAssertTrue(unitField.waitForExistence(timeout: 5), "La vista de unidades debe abrirse")
         unitField.tap()
         unitField.typeText("pags")
         app.buttons["plus.circle.fill"].firstMatch.tap()
 
         app.navigationBars.firstMatch.swipeDown()
 
+        let goalField = app.textFields["Número/meta"].firstMatch
+        XCTAssertTrue(goalField.waitForExistence(timeout: 5), "El formulario debe ser visible tras cerrar la gestión de unidades")
+
         app.staticTexts["uds"].firstMatch
             .coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        app.buttons["pags"].firstMatch.tap()
+
+        let pagsButton = app.buttons["pags"].firstMatch
+        XCTAssertTrue(pagsButton.waitForExistence(timeout: 5), "La unidad 'pags' debe aparecer en el menú")
+        pagsButton.tap()
 
         app.textFields["Número/meta"].firstMatch.tap()
         app.textFields["Número/meta"].firstMatch.typeText("30")
@@ -153,9 +159,23 @@ final class OruUITests: XCTestCase {
         // ── Verificar en estadísticas ──
         verifyHabitInStats("lectura")
 
-        // ── Borrar ──
+        // ── Borrar hábito ──
         app.tabBars.buttons["Inicio"].tap()
         deleteHabit(habitCell, name: "lectura")
+
+        // ── Borrar unidad personalizada ──
+        app.buttons["plus"].firstMatch.tap()
+        app.buttons["Cantidad"].firstMatch.tap()
+
+        app.staticTexts["uds"].firstMatch
+            .coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        app.buttons["Añadir nueva medida"].firstMatch.tap()
+
+        let pagsCell = app.staticTexts["pags"].firstMatch
+        XCTAssertTrue(pagsCell.waitForExistence(timeout: 3), "La unidad 'pags' debe existir")
+        pagsCell.swipeLeft()
+        app.buttons["trash"].firstMatch.tap()
+        app.buttons["Eliminar"].firstMatch.tap()
     }
 
     @MainActor

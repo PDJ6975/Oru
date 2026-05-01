@@ -1,3 +1,5 @@
 Oru/docs/
 *.md
 xcshareddata/
+*.xcresult/
+*.log

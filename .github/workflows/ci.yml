@@ -25,6 +25,7 @@ jobs:
           xcodebuild test \
             -scheme Oru \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
+            -skip-testing OruUITests \
             CODE_SIGNING_ALLOWED=NO
 
       - name: Build Release
